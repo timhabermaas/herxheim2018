@@ -30,11 +30,11 @@ type API
  :<|> "registrations" :> Get '[HTML] Page.Html
 
 
-startApp :: String -> IO ()
-startApp dbUrl = do
+startApp :: String -> Int -> IO ()
+startApp dbUrl port = do
     conn <- Db.connect dbUrl
     Db.migrate conn
-    run 8080 $ logStdoutDev $ app conn
+    run port $ logStdoutDev $ app conn
 
 app :: Db.Connection -> Application
 app conn = serve api $ server conn

@@ -6,4 +6,5 @@ import System.Environment (getEnv)
 main :: IO ()
 main = do
     dbUrl <- getEnv "DATABASE_URL"
-    startApp dbUrl
+    port <- read <$> getEnv "PORT"
+    startApp dbUrl port
