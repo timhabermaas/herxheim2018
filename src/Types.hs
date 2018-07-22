@@ -4,10 +4,9 @@ module Types
     ) where
 
 import qualified Data.Text as T
-import qualified Data.Set as Set
 import Data.Time.Calendar (Day)
 
-data Sleepover = FridayNight | SaturdayNight deriving (Show, Ord, Eq)
+data Sleepover = FridayNight | SaturdayNight | AllNights | NoNights deriving (Show, Ord, Eq)
 
 data Participant = Participant
     { participantName :: T.Text
@@ -15,5 +14,5 @@ data Participant = Participant
     , participantStreet :: T.Text
     , participantPostalCode :: T.Text
     , participantCity :: T.Text
-    , participantSleepovers :: Set.Set Sleepover
+    , participantSleepovers :: Sleepover
     } deriving (Show)

@@ -18,14 +18,13 @@ import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple.FromField
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.Text as T
-import qualified Data.Set as Set
 
 import Data.Time.Clock (getCurrentTime, UTCTime)
 import Data.Time.Calendar (Day)
 
 import Types
 
--- TODO: Do not expose this datatype, but parameterize the id + registeredAt field
+-- TODO: Do not expose this datatype, but parameterize the id + registeredAt field of the on in Types
 -- e.g. Participant () () would come from the form
 data DbParticipant = DbParticipant
     { dbParticipantId :: Int
@@ -35,24 +34,24 @@ data DbParticipant = DbParticipant
     , dbParticipantPostalCode :: T.Text
     , dbParticipantCity :: T.Text
     , dbParticipantRegisteredAt :: UTCTime
-    , dbParticipantSleepovers :: Set.Set Sleepover
+    , dbParticipantSleepovers :: Sleepover
     } deriving (Show)
 
-instance FromField (Set.Set Sleepover) where
+instance FromField Sleepover where
     fromField f bs = do
         value <- fromField f bs
         case value :: String of
-            "both" -> return $ Set.fromList [FridayNight, SaturdayNight]
-            "fr" -> return $ Set.fromList [FridayNight]
-            "sa" -> return $ Set.fromList [SaturdayNight]
+            "both" -> return AllNights
+            "fr" -> return FridayNight
+            "sa" -> return SaturdayNight
+            "none" -> return NoNights
             _ -> fail "sleepover not of expected value"
 
-sleepoversToText :: Set.Set Sleepover -> T.Text
-sleepoversToText sleepovers
-    | Set.fromList [FridayNight, SaturdayNight] == sleepovers = "both"
-    | Set.member FridayNight sleepovers = "fr"
-    | Set.member SaturdayNight sleepovers = "sa"
-    | otherwise = error "impossible case"
+sleepoversToText :: Sleepover -> T.Text
+sleepoversToText FridayNight = "fr"
+sleepoversToText SaturdayNight = "sa"
+sleepoversToText AllNights = "both"
+sleepoversToText NoNights = "none"
 
 instance FromRow DbParticipant where
     fromRow = DbParticipant <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
