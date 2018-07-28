@@ -17,6 +17,7 @@ import qualified Data.Text                     as T
 import Data.Monoid ((<>))
 
 import qualified Db as Db
+import qualified RegistrationsTable as RT
 
 type Html = H.Html
 
@@ -34,8 +35,10 @@ layout inner = do
                 inner
 
 registrationListPage :: [Db.DbParticipant] -> H.Html
-registrationListPage participants =
+registrationListPage participants = layout $ do
     H.ul $ mapM_ registrationEntry participants
+    RT.tableAsHtml participants
+    H.a ! A.href "/registrations.csv" $ "Download als .csv"
   where
     registrationEntry Db.DbParticipant{..} = H.li $ H.toHtml $ dbParticipantName <> " (" <> T.pack (show dbParticipantSleepovers) <> ")"
 

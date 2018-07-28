@@ -18,6 +18,7 @@ library
   exposed-modules:     Lib
   other-modules:       Db
                      , Html
+                     , RegistrationsTable
                      , Form
                      , Types
   ghc-options:         -Wall
@@ -26,14 +27,19 @@ library
                      , beam-postgres
                      , blaze-html
                      , bytestring
+                     , cassava
                      , containers
                      , digestive-functors
                      , digestive-functors-blaze
+                     , http-media
+                     , pandoc
+                     , mtl
                      , postgresql-simple
                      , servant-blaze
                      , servant-server
                      , text
                      , time
+                     , vector
                      , wai
                      , wai-extra
                      , warp
