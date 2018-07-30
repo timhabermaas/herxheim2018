@@ -8,6 +8,7 @@
 module Lib
     ( startApp
     , app
+    , AdminPassword(..)
     ) where
 
 import Network.Wai.Handler.Warp (run)
@@ -45,18 +46,31 @@ type API
     = "register" :> Get '[HTML] Page.Html
  :<|> "register" :> ReqBody '[FormUrlEncoded] [(T.Text, T.Text)] :> Post '[HTML] Page.Html
  :<|> "success" :> Get '[HTML] Page.Html
- :<|> "registrations" :> Get '[HTML] Page.Html
+ :<|> "registrations" :> BasicAuth "foo-realm" () :> Get '[HTML] Page.Html
  :<|> "registrations.csv" :> Get '[CSV] BSL.ByteString
 
+newtype AdminPassword = AdminPassword T.Text
 
-startApp :: String -> Int -> IO ()
-startApp dbUrl port = do
+startApp :: String -> Int -> AdminPassword -> IO ()
+startApp dbUrl port pw = do
     conn <- Db.connect dbUrl
     Db.migrate conn
-    run port $ logStdoutDev $ app conn
+    run port $ logStdoutDev $ app conn pw
 
-app :: Db.Connection -> Application
-app conn = serve api $ server conn
+authCheck :: AdminPassword -> BasicAuthCheck ()
+authCheck (AdminPassword pw) =
+    let check (BasicAuthData username password) =
+            if username == "admin" && password == TE.encodeUtf8 pw
+            then pure (Authorized ())
+            else pure Unauthorized
+    in
+        BasicAuthCheck check
+
+authServerContext :: AdminPassword -> Context (BasicAuthCheck () ': '[])
+authServerContext pw = (authCheck pw) :. EmptyContext
+
+app :: Db.Connection -> AdminPassword -> Application
+app conn pw = serveWithContext api (authServerContext pw) (server conn)
 
 api :: Proxy API
 api = Proxy
@@ -74,8 +88,8 @@ registerHandler = do
     view <- DF.getForm "Registration" Form.registerForm
     pure $ Page.registerPage view
 
-registrationsHandler :: Db.Connection -> Handler Page.Html
-registrationsHandler conn = do
+registrationsHandler :: Db.Connection -> () -> Handler Page.Html
+registrationsHandler conn _ = do
     registrations <- liftIO $ Db.allRegistrations conn
     pure $ Page.registrationListPage registrations
 
