@@ -47,7 +47,7 @@ type API
  :<|> "register" :> ReqBody '[FormUrlEncoded] [(T.Text, T.Text)] :> Post '[HTML] Page.Html
  :<|> "success" :> Get '[HTML] Page.Html
  :<|> "registrations" :> BasicAuth "foo-realm" () :> Get '[HTML] Page.Html
- :<|> "registrations.csv" :> Get '[CSV] BSL.ByteString
+ :<|> "registrations.csv" :> BasicAuth "foo-realm" () :> Get '[CSV] BSL.ByteString
 
 newtype AdminPassword = AdminPassword T.Text
 
@@ -116,8 +116,8 @@ instance Csv.ToNamedRecord CsvParticipant where
             AllNights -> "Samstag und Sonntag"
             NoNights -> "Keine Übernachtung"
 
-registrationsCsvHandler :: Db.Connection -> Handler BSL.ByteString
-registrationsCsvHandler conn = do
+registrationsCsvHandler :: Db.Connection -> () -> Handler BSL.ByteString
+registrationsCsvHandler conn _ = do
     registrations <- liftIO $ Db.allRegistrations conn
     let headers = fixEncoding <$> V.fromList [ "Name", "Adresse", "Übernachtung" ]
     pure $ Csv.encodeByName headers $ fmap CsvParticipant registrations

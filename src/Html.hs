@@ -99,21 +99,25 @@ registerPage view = layout $ do
             H.form ! A.action "/register" ! A.method "post" $ do
                 H.div ! A.class_ "form-group" $ do
                     H.label "Name"
-                    DH.errorList "name" (modifiedView view)
                     DH.inputText "name" view ! A.class_ "form-control"
+                    DH.errorList "name" (modifiedView view)
                 H.div ! A.class_ "form-group" $ do
                     H.label "Geburtsdatum"
-                    DH.errorList "birthday" (modifiedView view)
                     DH.inputText "birthday" view ! A.class_ "form-control"
+                    DH.errorList "birthday" (modifiedView view)
                 H.div ! A.class_ "form-group" $ do
                     H.label "Straße"
                     DH.inputText "street" view ! A.class_ "form-control"
-                H.div ! A.class_ "form-group" $ do
-                    H.label "PLZ"
-                    DH.inputText "postalCode" view ! A.class_ "form-control"
-                H.div ! A.class_ "form-group" $ do
-                    H.label "Stadt"
-                    DH.inputText "city" view ! A.class_ "form-control"
+                    DH.errorList "street" (modifiedView view)
+                H.div ! A.class_ "row" $ do
+                    H.div ! A.class_ "col-4 form-group" $ do
+                        H.label "PLZ"
+                        DH.inputText "postalCode" view ! A.class_ "form-control"
+                        DH.errorList "postalCode" (modifiedView view)
+                    H.div ! A.class_ "col-8 form-group" $ do
+                        H.label "Stadt"
+                        DH.inputText "city" view ! A.class_ "form-control"
+                        DH.errorList "city" (modifiedView view)
                 H.div ! A.class_ "form-group" $ do
                     H.h4 "Übernachtung"
                     bootstrapRadios "sleepover" (modifiedView view)
