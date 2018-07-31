@@ -43,7 +43,7 @@ instance MimeRender CSV BSL.ByteString where
     mimeRender _ val = val
 
 type API
-    = "register" :> Get '[HTML] Page.Html
+    = Get '[HTML] Page.Html
  :<|> "register" :> ReqBody '[FormUrlEncoded] [(T.Text, T.Text)] :> Post '[HTML] Page.Html
  :<|> "success" :> Get '[HTML] Page.Html
  :<|> "registrations" :> BasicAuth "foo-realm" () :> Get '[HTML] Page.Html
