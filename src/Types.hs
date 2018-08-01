@@ -21,4 +21,5 @@ data Participant = Participant
     , participantPostalCode :: T.Text
     , participantCity :: T.Text
     , participantSleepovers :: Sleepover
+    , participantCountry :: T.Text
     } deriving (Show)

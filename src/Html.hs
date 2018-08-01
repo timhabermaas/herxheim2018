@@ -16,6 +16,7 @@ import qualified Text.Digestive.View           as DV
 import qualified Data.Text                     as T
 import Data.Monoid ((<>))
 import Data.Time.Format (formatTime, defaultTimeLocale)
+import Control.Monad (forM_)
 
 import qualified Db as Db
 import Types
@@ -31,9 +32,12 @@ layout inner = do
             H.meta ! A.name "viewport" ! A.content "width=device-width, initial-scale=1, shrink-to-fit=no"
             H.title "Herxheim Convention 2018"
             H.link ! A.rel "stylesheet" ! A.type_ "text/css" ! A.href "https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css"
+            H.link ! A.rel "stylesheet" ! A.type_ "text/css" ! A.href "https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+            H.script ! A.src "https://cdn.jsdelivr.net/npm/flatpickr" $ ""
         H.body $ do
             H.div ! A.class_ "container" $ do
                 inner
+            H.script $ "flatpickr(document.getElementById('Registration.birthday'), { dateFormat: 'd.m.Y'})"
 
 registrationListPage :: [Db.DbParticipant] -> H.Html
 registrationListPage participants = layout $ do
@@ -45,9 +49,11 @@ registrationListPage participants = layout $ do
                         H.th "Name"
                         H.th "Geburtsdatum"
                         H.th "Adresse"
+                        H.th "Land"
                         H.th "Übernachtung" ! A.colspan "2"
                         H.th "Aktionen"
                     H.tr $ do
+                        H.th ""
                         H.th ""
                         H.th ""
                         H.th ""
@@ -58,6 +64,7 @@ registrationListPage participants = layout $ do
                 H.tfoot $ do
                     H.tr $ do
                         H.th $ H.toHtml $ length participants
+                        H.th ""
                         H.th ""
                         H.th ""
                         H.th ! A.class_ "text-right" $ H.toHtml $ length $ filter (\p -> Db.dbParticipantSleepovers p == AllNights || Db.dbParticipantSleepovers p == FridayNight) participants
@@ -72,6 +79,7 @@ registrationListPage participants = layout $ do
             H.td $ H.toHtml dbParticipantName
             H.td $ H.toHtml $ birthday dbParticipantBirthday
             H.td $ H.toHtml $ address p
+            H.td $ H.toHtml $ dbParticipantCountry
             H.td ! A.class_ "text-center" $ friday dbParticipantSleepovers
             H.td ! A.class_ "text-center" $ saturday dbParticipantSleepovers
             H.td $ do
@@ -123,6 +131,10 @@ registerPage view = layout $ do
                         label "Stadt" "city" view
                         DH.inputText "city" view ! A.class_ "form-control"
                         DH.errorList "city" (modifiedView view)
+                H.div ! A.class_ "form-group" $ do
+                    label "Land" "country" view
+                    DH.inputSelect "country" (modifiedView view) ! A.class_ "form-control"
+                    DH.errorList "country" (modifiedView view)
                 H.div ! A.class_ "form-group" $ do
                     H.h4 "Übernachtung"
                     bootstrapRadios "sleepover" (modifiedView view)
