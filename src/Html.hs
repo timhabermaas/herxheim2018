@@ -47,12 +47,14 @@ registrationListPage participants = layout $ do
                         H.th "Geburtsdatum"
                         H.th "Adresse"
                         H.th "Übernachtung" ! A.colspan "2"
+                        H.th "Aktionen"
                     H.tr $ do
                         H.th ""
                         H.th ""
                         H.th ""
                         H.th ! A.class_ "text-center" $ "Fr -> Sa"
                         H.th ! A.class_ "text-center" $ "Sa -> So"
+                        H.th ""
                 H.tbody $ mapM_ participantRow participants
                 H.tfoot $ do
                     H.tr $ do
@@ -61,6 +63,7 @@ registrationListPage participants = layout $ do
                         H.th ""
                         H.th ! A.class_ "text-right" $ H.toHtml $ length $ filter (\p -> Db.dbParticipantSleepovers p == AllNights || Db.dbParticipantSleepovers p == FridayNight) participants
                         H.th ! A.class_ "text-right" $ H.toHtml $ length $ filter (\p -> Db.dbParticipantSleepovers p == AllNights || Db.dbParticipantSleepovers p == SaturdayNight) participants
+                        H.th ""
     row $ do
         col 12 $ do
             H.a ! A.href "/registrations.csv" $ "Download als .csv"
@@ -74,8 +77,9 @@ registrationListPage participants = layout $ do
             H.td ! A.class_ "text-center" $ friday dbParticipantSleepovers
             H.td ! A.class_ "text-center" $ saturday dbParticipantSleepovers
             H.td $ do
-                H.form ! A.action (H.toValue $ "/registrations/" <> show dbParticipantId <> "/delete")  ! A.method "post" $ do
-                    H.input ! A.class_ "btn btn-danger" ! A.type_ "submit" ! A.name "delete" ! A.value "Löschen"
+                H.form ! A.action (H.toValue $ "/registrations/" <> idToText dbParticipantId <> "/delete")  ! A.method "post" $ do
+                    H.input ! A.onclick (H.toValue $ "return confirm('Willst du wirklich ' + '" <> dbParticipantName <> "' + ' ausladen?');") ! A.class_ "btn btn-danger" ! A.type_ "submit" ! A.name "delete" ! A.value "Löschen"
+    idToText (Db.DbId i) = show i
     birthday d = formatTime defaultTimeLocale "%d.%m.%Y" d
     address Db.DbParticipant{..} = (dbParticipantStreet <> ", " <> dbParticipantPostalCode <> " " <> dbParticipantCity) :: T.Text
     friday FridayNight = "X"
