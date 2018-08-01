@@ -12,7 +12,15 @@ $ stack build
 ## Run the server
 
 ```sh
+$ createdb herxheim2018
 $ env PORT=8080 ADMIN_PASSWORD=admin DATABASE_URL='postgres://localhost/herxheim2018' stack exec herxheim2018-exe
+```
+
+## Run the tests
+
+```sh
+$ createdb herxheim2018_test
+$ env DATABASE_URL='postgres://localhost/herxheim2018_test' stack test
 ```
 
 ## Deployment

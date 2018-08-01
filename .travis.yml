@@ -25,6 +25,9 @@ addons:
     packages:
       - libgmp-dev
 
+services:
+  - postgresql
+
 before_install:
 # Download and unpack the stack executable
 - mkdir -p ~/.local/bin
@@ -35,6 +38,9 @@ install:
 # Build dependencies
 - stack --no-terminal --install-ghc test --only-dependencies
 
+before_script:
+  - psql -c 'create database herxheim2018_test;' -U postgres
+
 script:
 # Build the package, its tests, and its docs and run the tests
-  - stack --no-terminal test --haddock --no-haddock-deps
+  - env DATABASE_URL='postgres://postgres@localhost/herxheim2018_test' stack --no-terminal test --haddock --no-haddock-deps
