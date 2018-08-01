@@ -12,3 +12,12 @@
 ```sh
 > env PORT=8080 DATABASE_URL='postgres://localhost/herxheim2018' stack exec herxheim2018-exe
 ```
+
+## Deployment
+
+The application is currently deployed to Heroku. For deployment run:
+
+```sh
+git remote add heroku https://git.heroku.com/herxheim2018.git
+git push heroku master
+```
