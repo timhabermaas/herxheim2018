@@ -10,7 +10,7 @@
 ## Run the server
 
 ```sh
-> env PORT=8080 DATABASE_URL='postgres://localhost/herxheim2018' stack exec herxheim2018-exe
+> env PORT=8080 ADMIN_PASSWORD=admin DATABASE_URL='postgres://localhost/herxheim2018' stack exec herxheim2018-exe
 ```
 
 ## Deployment

@@ -16,7 +16,6 @@ import qualified Text.Digestive.View           as DV
 import qualified Data.Text                     as T
 import Data.Monoid ((<>))
 import Data.Time.Format (formatTime, defaultTimeLocale)
-import Control.Monad (forM_)
 
 import qualified Db as Db
 import Types
@@ -142,13 +141,26 @@ registerPage view = layout $ do
                     H.input ! A.class_ "btn btn-primary" ! A.type_ "submit" ! A.value "Anmelden"
         col 6 $ do
             H.h2 "FAQs"
-            H.h3 "Warum muss ich mich ueberhaupt anmelden?"
-            H.p "Da wir dieses Jahr nur eine begrenzte Anzahl an Schlafplaetzen anbieten koennen, sicherst du dich mit eienr Anmeldung einen Schlafplatz. Zusaetzlich erleichterst du uns so die Planung."
+            H.h3 "Warum muss ich mich dieses Jahr überhaupt anmelden?"
+            H.p "Wir haben dieses Jahr nur eine begrenzte Anzahl an Schlafplätzen zur Verfügung und mit einer Anmeldung sicherst du dir einen Schlafplatz."
             H.h3 "Ich kann leider doch nicht kommen, was nun?"
-            H.p "Schade! Schreibe dann eine E-Mail an x@foo.com mit deinem Namen und bitte um Abmeldung."
+            H.p $ do
+                "Schade! Schreibe dann eine E-Mail an "
+                mailLink registrationEmail registrationEmail
+                " mit deinem Namen und bitte um Abmeldung."
             H.h3 "Was passiert mit meinen Daten?"
-            H.p "Die Daten dienen ausschliessliche der Anmeldung bei der Herxheim-Convention und werden nur zu diesem Zweck gespeichert. Du kannst uns jederzeit unter x@foo.com kontaktieren um deine Daten und somit deine Anmeldung loeschen zu lassen. Bis 30 Tage nach der Convention (11.11.2018) werden alle personenbezogenen Daten geloescht."
+            H.p $ do
+                "Die Daten dienen ausschließlich der Anmeldung bei der Herxheim-Convention "
+                "und werden nur zu diesem Zweck gespeichert. Du kannst uns jederzeit unter "
+                mailLink registrationEmail registrationEmail
+                "kontaktieren um deine Daten und somit deine Anmeldung löschen zu lassen. "
+                "Bis 30 Tage nach der Convention (11.11.2018) werden alle deine Daten gelöscht."
 
+registrationEmail :: T.Text
+registrationEmail = "herxheim.convention@gmail.com"
+
+mailLink :: T.Text -> T.Text -> Html
+mailLink text email = H.a ! A.href (H.toValue $ "mailto:" <> email) $ H.toHtml text
 
 label :: T.Text -> T.Text -> DV.View a -> Html
 label text name view =
