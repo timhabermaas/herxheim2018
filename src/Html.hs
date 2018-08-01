@@ -166,8 +166,9 @@ registerPage view = layout $ do
                 "Die Daten dienen ausschließlich der Anmeldung bei der Herxheim-Convention "
                 "und werden nur zu diesem Zweck gespeichert. Du kannst uns jederzeit unter "
                 mailLink registrationEmail registrationEmail
-                "kontaktieren um deine Daten und somit deine Anmeldung löschen zu lassen. "
-                "Bis 30 Tage nach der Convention (11.11.2018) werden alle deine Daten gelöscht."
+                " kontaktieren um deine Daten und somit deine Anmeldung löschen zu lassen. "
+                "Alle Daten werden noch bis 30 Tage nach der Convention (11.11.2018) gespeichert "
+                "und dann gelöscht."
 
 registrationEmail :: T.Text
 registrationEmail = "herxheim.convention@gmail.com"
