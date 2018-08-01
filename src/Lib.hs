@@ -46,7 +46,7 @@ type API
     = Get '[HTML] Page.Html
  :<|> "register" :> ReqBody '[FormUrlEncoded] [(T.Text, T.Text)] :> Post '[HTML] Page.Html
  :<|> "success" :> Get '[HTML] Page.Html
- :<|> "registrations" :> BasicAuth "foo-realm" () :> Get '[HTML] Page.Html
+ :<|> "admin" :> BasicAuth "foo-realm" () :> Get '[HTML] Page.Html
  :<|> "registrations.csv" :> BasicAuth "foo-realm" () :> Get '[CSV] BSL.ByteString
  :<|> "registrations" :> Capture "participantId" ParticipantId :> "delete" :> Post '[HTML] Page.Html
 
@@ -141,7 +141,7 @@ postRegisterHandler conn body = do
 deleteRegistrationsHandler :: Db.Connection -> ParticipantId -> Handler Page.Html
 deleteRegistrationsHandler conn (ParticipantId participantId) = do
     liftIO $ Db.deleteRegistration conn (Db.DbId participantId)
-    redirectTo "/registrations"
+    redirectTo "/admin"
 
 
 successHandler :: Handler Page.Html
