@@ -16,7 +16,7 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Lib
-  other-modules:       Db
+                     , Db
                      , Html
                      , RegistrationsTable
                      , Form
@@ -62,6 +62,7 @@ test-suite herxheim2018-test
   main-is:             Spec.hs
   build-depends:       base
                      , herxheim2018
+                     , text
                      , hspec
                      , hspec-wai
                      , hspec-wai-json
