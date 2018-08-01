@@ -96,29 +96,31 @@ modifiedView = fmap H.toHtml
 
 registerPage :: DV.View T.Text -> H.Html
 registerPage view = layout $ do
-    H.h1 "Herxheim-Anmeldung 2018"
+    row $ do
+        col 12 $ do
+            H.h1 ! A.class_ "mt-3" $ "Herxheim-Anmeldung 2018"
     row $ do
         col 6 $ do
             H.form ! A.action "/register" ! A.method "post" $ do
                 H.div ! A.class_ "form-group" $ do
-                    H.label "Name"
+                    label "Name" "name" view
                     DH.inputText "name" view ! A.class_ "form-control"
                     DH.errorList "name" (modifiedView view)
                 H.div ! A.class_ "form-group" $ do
-                    H.label "Geburtsdatum"
+                    label "Geburtsdatum" "birthday" view
                     DH.inputText "birthday" view ! A.class_ "form-control"
                     DH.errorList "birthday" (modifiedView view)
                 H.div ! A.class_ "form-group" $ do
-                    H.label "Straße"
+                    label "Straße" "street" view
                     DH.inputText "street" view ! A.class_ "form-control"
                     DH.errorList "street" (modifiedView view)
                 H.div ! A.class_ "row" $ do
                     H.div ! A.class_ "col-4 form-group" $ do
-                        H.label "PLZ"
+                        label "PLZ" "postalCode" view
                         DH.inputText "postalCode" view ! A.class_ "form-control"
                         DH.errorList "postalCode" (modifiedView view)
                     H.div ! A.class_ "col-8 form-group" $ do
-                        H.label "Stadt"
+                        label "Stadt" "city" view
                         DH.inputText "city" view ! A.class_ "form-control"
                         DH.errorList "city" (modifiedView view)
                 H.div ! A.class_ "form-group" $ do
@@ -135,6 +137,12 @@ registerPage view = layout $ do
             H.h3 "Was passiert mit meinen Daten?"
             H.p "Die Daten dienen ausschliessliche der Anmeldung bei der Herxheim-Convention und werden nur zu diesem Zweck gespeichert. Du kannst uns jederzeit unter x@foo.com kontaktieren um deine Daten und somit deine Anmeldung loeschen zu lassen. Bis 30 Tage nach der Convention (11.11.2018) werden alle personenbezogenen Daten geloescht."
 
+
+label :: T.Text -> T.Text -> DV.View a -> Html
+label text name view =
+    let ref = H.toValue $ DV.absoluteRef name view
+    in
+        H.label ! A.for ref $ H.toHtml text
 
 bootstrapRadios :: T.Text -> DV.View Html -> Html
 bootstrapRadios ref view =
