@@ -61,8 +61,6 @@ registrationListPage participants = layout $ do
                         H.th ""
                         H.th ! A.class_ "text-right" $ H.toHtml $ length $ filter (\p -> Db.dbParticipantSleepovers p == AllNights || Db.dbParticipantSleepovers p == FridayNight) participants
                         H.th ! A.class_ "text-right" $ H.toHtml $ length $ filter (\p -> Db.dbParticipantSleepovers p == AllNights || Db.dbParticipantSleepovers p == SaturdayNight) participants
-            --H.ul $ mapM_ registrationEntry participants
-            --RT.tableAsHtml participants
     row $ do
         col 12 $ do
             H.a ! A.href "/registrations.csv" $ "Download als .csv"
@@ -75,6 +73,9 @@ registrationListPage participants = layout $ do
             H.td $ H.toHtml $ address p
             H.td ! A.class_ "text-center" $ friday dbParticipantSleepovers
             H.td ! A.class_ "text-center" $ saturday dbParticipantSleepovers
+            H.td $ do
+                H.form ! A.action (H.toValue $ "/registrations/" <> show dbParticipantId <> "/delete")  ! A.method "post" $ do
+                    H.input ! A.class_ "btn btn-danger" ! A.type_ "submit" ! A.name "delete" ! A.value "Löschen"
     birthday d = formatTime defaultTimeLocale "%d.%m.%Y" d
     address Db.DbParticipant{..} = (dbParticipantStreet <> ", " <> dbParticipantPostalCode <> " " <> dbParticipantCity) :: T.Text
     friday FridayNight = "X"

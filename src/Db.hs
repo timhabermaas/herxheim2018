@@ -6,8 +6,10 @@ module Db
     ( migrate
     , connect
     , saveRegistration
+    , deleteRegistration
     , allRegistrations
     , DbParticipant(..)
+    , DbId(..)
     , Connection
     ) where
 
@@ -27,7 +29,7 @@ import Types
 -- TODO: Do not expose this datatype, but parameterize the id + registeredAt field of the on in Types
 -- e.g. Participant () () would come from the form
 data DbParticipant = DbParticipant
-    { dbParticipantId :: Int
+    { dbParticipantId :: DbId DbParticipant
     , dbParticipantName :: T.Text
     , dbParticipantBirthday :: Day
     , dbParticipantStreet :: T.Text
@@ -36,6 +38,11 @@ data DbParticipant = DbParticipant
     , dbParticipantRegisteredAt :: UTCTime
     , dbParticipantSleepovers :: Sleepover
     } deriving (Show)
+
+newtype DbId a = DbId Int deriving (Show)
+
+instance FromField (DbId a) where
+    fromField f bs = DbId <$> fromField f bs
 
 instance FromField Sleepover where
     fromField f bs = do
@@ -62,6 +69,11 @@ saveRegistration :: Connection -> Participant -> IO ()
 saveRegistration (Connection conn) Participant{..} = do
     t <- getCurrentTime
     void $ PSQL.execute conn "INSERT INTO participants (name, birthday, street, postalCode, city, registeredAt, sleepovers) VALUES (?, ?, ?, ?, ?, ?, ?)" (participantName, participantBirthday, participantStreet, participantPostalCode, participantCity, t, sleepoversToText participantSleepovers)
+
+deleteRegistration :: Connection -> DbId Participant -> IO ()
+deleteRegistration (Connection conn) (DbId id') = do
+    void $ PSQL.execute conn "DELETE FROM participants WHERE id = ?" (PSQL.Only id')
+
 
 allRegistrations :: Connection -> IO [DbParticipant]
 allRegistrations (Connection conn) = do

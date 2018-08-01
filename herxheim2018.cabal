@@ -31,6 +31,7 @@ library
                      , containers
                      , digestive-functors
                      , digestive-functors-blaze
+                     , http-api-data
                      , http-media
                      , pandoc
                      , mtl

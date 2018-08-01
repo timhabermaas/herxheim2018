@@ -48,6 +48,7 @@ type API
  :<|> "success" :> Get '[HTML] Page.Html
  :<|> "registrations" :> BasicAuth "foo-realm" () :> Get '[HTML] Page.Html
  :<|> "registrations.csv" :> BasicAuth "foo-realm" () :> Get '[CSV] BSL.ByteString
+ :<|> "registrations" :> Capture "participantId" ParticipantId :> "delete" :> Post '[HTML] Page.Html
 
 newtype AdminPassword = AdminPassword T.Text
 
@@ -82,6 +83,7 @@ server conn =
     :<|> successHandler
     :<|> registrationsHandler conn
     :<|> registrationsCsvHandler conn
+    :<|> deleteRegistrationsHandler conn
 
 registerHandler :: Handler Page.Html
 registerHandler = do
@@ -131,11 +133,21 @@ postRegisterHandler conn body = do
             pure $ Page.registerPage view
         (_, Just registration) -> do
             liftIO $ Db.saveRegistration conn registration
-            throwError $ err303 { errHeaders = [("Location", "/success")] }
+            redirectTo "/success"
+
+deleteRegistrationsHandler :: Db.Connection -> ParticipantId -> Handler Page.Html
+deleteRegistrationsHandler conn (ParticipantId participantId) = do
+    liftIO $ Db.deleteRegistration conn (Db.DbId participantId)
+    redirectTo "/registrations"
+
 
 successHandler :: Handler Page.Html
 successHandler = do
     pure Page.successPage
+
+redirectTo :: BS.ByteString -> Handler a
+redirectTo url =
+    throwError $ err303 { errHeaders = [("Location", url)] }
 
 servantPathEnv :: (Monad m) => [(T.Text, T.Text)] -> DF.FormEncType -> m (DF.Env m)
 servantPathEnv body _ = pure env
