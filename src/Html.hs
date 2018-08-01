@@ -109,6 +109,10 @@ registerPage view = layout $ do
     row $ do
         col 6 $ do
             H.form ! A.action "/register" ! A.method "post" $ do
+                H.div ! A.class_ "form-group d-none" $ do
+                    label "Name" "botField" view
+                    DH.inputText "botField" view ! A.class_ "form-control"
+                    DH.errorList "botField" (modifiedView view)
                 H.div ! A.class_ "form-group" $ do
                     label "Name" "name" view
                     DH.inputText "name" view ! A.class_ "form-control"

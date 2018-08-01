@@ -131,9 +131,12 @@ postRegisterHandler conn body = do
         (view, Nothing) -> do
             liftIO $ putStrLn $ show view
             pure $ Page.registerPage view
-        (_, Just registration) -> do
-            liftIO $ Db.saveRegistration conn registration
-            redirectTo "/success"
+        (_, Just (botStatus, registration)) -> do
+            case botStatus of
+                Form.IsBot -> redirectTo "/success"
+                Form.IsHuman -> do
+                    liftIO $ Db.saveRegistration conn registration
+                    redirectTo "/success"
 
 deleteRegistrationsHandler :: Db.Connection -> ParticipantId -> Handler Page.Html
 deleteRegistrationsHandler conn (ParticipantId participantId) = do
