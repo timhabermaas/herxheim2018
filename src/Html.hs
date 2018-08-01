@@ -18,7 +18,6 @@ import Data.Monoid ((<>))
 import Data.Time.Format (formatTime, defaultTimeLocale)
 
 import qualified Db as Db
-import qualified RegistrationsTable as RT
 import Types
 
 type Html = H.Html
@@ -68,7 +67,6 @@ registrationListPage participants = layout $ do
         col 12 $ do
             H.a ! A.href "/registrations.csv" $ "Download als .csv"
   where
-    registrationEntry Db.DbParticipant{..} = H.li $ H.toHtml $ dbParticipantName <> " (" <> T.pack (show dbParticipantSleepovers) <> ")"
     participantRow p@Db.DbParticipant{..} =
         H.tr $ do
             H.td $ H.toHtml dbParticipantName
