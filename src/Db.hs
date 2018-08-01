@@ -78,7 +78,7 @@ deleteRegistration (Connection conn) (DbId id') = do
 
 allRegistrations :: Connection -> IO [DbParticipant]
 allRegistrations (Connection conn) = do
-    PSQL.query_ conn "SELECT id, name, birthday, street, postalCode, city, country, registeredAt, sleepovers FROM participants"
+    PSQL.query_ conn "SELECT id, name, birthday, street, postalCode, city, country, registeredAt, sleepovers FROM participants ORDER BY registeredAt DESC"
 
 connect :: String -> IO Connection
 connect url = Connection <$> PSQL.connectPostgreSQL (BS.pack url)

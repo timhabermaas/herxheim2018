@@ -15,7 +15,9 @@ import qualified Text.Digestive.Blaze.Html5    as DH
 import qualified Text.Digestive.View           as DV
 import qualified Data.Text                     as T
 import Data.Monoid ((<>))
+import Data.Time.Clock (UTCTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
+import Data.Time.LocalTime (utcToZonedTime, hoursToTimeZone, ZonedTime)
 
 import qualified Db as Db
 import Types
@@ -50,14 +52,16 @@ registrationListPage participants = layout $ do
                         H.th "Adresse"
                         H.th "Land"
                         H.th "Übernachtung" ! A.colspan "2"
+                        H.th "Angemeldet am"
                         H.th "Aktionen"
                     H.tr $ do
                         H.th ""
                         H.th ""
                         H.th ""
                         H.th ""
-                        H.th ! A.class_ "text-center" $ "Fr -> Sa"
-                        H.th ! A.class_ "text-center" $ "Sa -> So"
+                        H.th ! A.class_ "text-center" $ "Fr->Sa"
+                        H.th ! A.class_ "text-center" $ "Sa->So"
+                        H.th ""
                         H.th ""
                 H.tbody $ mapM_ participantRow participants
                 H.tfoot $ do
@@ -69,6 +73,7 @@ registrationListPage participants = layout $ do
                         H.th ! A.class_ "text-right" $ H.toHtml $ length $ filter (\p -> Db.dbParticipantSleepovers p == AllNights || Db.dbParticipantSleepovers p == FridayNight) participants
                         H.th ! A.class_ "text-right" $ H.toHtml $ length $ filter (\p -> Db.dbParticipantSleepovers p == AllNights || Db.dbParticipantSleepovers p == SaturdayNight) participants
                         H.th ""
+                        H.th ""
     row $ do
         col 12 $ do
             H.a ! A.href "/registrations.csv" $ "Download als .csv"
@@ -78,9 +83,10 @@ registrationListPage participants = layout $ do
             H.td $ H.toHtml dbParticipantName
             H.td $ H.toHtml $ birthday dbParticipantBirthday
             H.td $ H.toHtml $ address p
-            H.td $ H.toHtml $ dbParticipantCountry
+            H.td $ H.toHtml dbParticipantCountry
             H.td ! A.class_ "text-center" $ friday dbParticipantSleepovers
             H.td ! A.class_ "text-center" $ saturday dbParticipantSleepovers
+            H.td $ H.toHtml $ formatTime defaultTimeLocale "%d.%m.%Y %H:%M Uhr" $ utcToBerlin dbParticipantRegisteredAt
             H.td $ do
                 H.form ! A.action (H.toValue $ "/registrations/" <> idToText dbParticipantId <> "/delete")  ! A.method "post" $ do
                     H.input ! A.onclick (H.toValue $ "return confirm('Willst du wirklich ' + '" <> dbParticipantName <> "' + ' ausladen?');") ! A.class_ "btn btn-danger" ! A.type_ "submit" ! A.name "delete" ! A.value "Löschen"
@@ -93,6 +99,9 @@ registrationListPage participants = layout $ do
     saturday SaturdayNight = "X"
     saturday AllNights = "X"
     saturday _ = ""
+
+utcToBerlin :: UTCTime -> ZonedTime
+utcToBerlin = utcToZonedTime (hoursToTimeZone 2)
 
 successPage :: H.Html
 successPage = layout $ do
