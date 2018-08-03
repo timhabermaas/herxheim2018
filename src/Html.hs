@@ -37,6 +37,7 @@ layout inner = do
             H.script ! A.src "https://cdn.jsdelivr.net/npm/flatpickr" $ ""
         H.body $ do
             H.div ! A.class_ "container" $ do
+                H.div ! A.class_ "mb-3" $ mempty
                 inner
             H.script $ "flatpickr(document.getElementById('Registration.birthday'), { dateFormat: 'd.m.Y'})"
 
@@ -105,7 +106,9 @@ utcToBerlin = utcToZonedTime (hoursToTimeZone 2)
 
 successPage :: H.Html
 successPage = layout $ do
-    "Danke fuer deine Anmeldung!"
+    row $ do
+        col 12 $ do
+            H.h1 "Danke für deine Anmeldung!" ! A.class_ "text-center"
 
 modifiedView :: DV.View T.Text -> DV.View H.Html
 modifiedView = fmap H.toHtml
@@ -125,7 +128,7 @@ registerPage :: DV.View T.Text -> Bool -> H.Html
 registerPage view isOverLimit = layout $ do
     row $ do
         col 12 $ do
-            H.h1 ! A.class_ "mt-3" $ "Herxheim-Anmeldung 2018"
+            H.h1 "Herxheim-Anmeldung 2018"
     row $ do
         col 6 $ do
             renderIf isOverLimit $ do
