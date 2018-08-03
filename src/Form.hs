@@ -33,7 +33,7 @@ registerForm isOverLimit =
 
 
 mustBePresent :: (Monad m) => DF.Form T.Text m T.Text -> DF.Form T.Text m T.Text
-mustBePresent = DF.check "can't be blank" notEmpty
+mustBePresent = DF.check "muss ausgefüllt werden" notEmpty
   where
     notEmpty = not . T.null
 
