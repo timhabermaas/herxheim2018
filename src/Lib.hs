@@ -9,6 +9,7 @@ module Lib
     ( startApp
     , app
     , AdminPassword(..)
+    , Config(..)
     ) where
 
 import Network.Wai.Handler.Warp (run)

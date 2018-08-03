@@ -3,7 +3,8 @@
 
 module Main (main) where
 
-import Lib (app, AdminPassword(..))
+import Lib (app, AdminPassword(..), Config(..))
+import Types
 import Test.Hspec
 import Test.Hspec.Wai
 import qualified Data.Text.Lazy.Encoding as TE
@@ -21,12 +22,14 @@ main = do
     hspec $ spec conn (AdminPassword "admin")
 
 spec :: Db.Connection -> AdminPassword -> Spec
-spec conn pw = with (return $ app conn pw) $ do
-    describe "GET /" $ do
-        it "responds with 200" $ do
-            get "/" `shouldRespondWith` 200
-        it "has some FAQ entries" $ do
-            get "/" `shouldRespondWith` (successAndContains "Warum muss ich mich dieses Jahr überhaupt anmelden?")
+spec conn pw = do
+    let limit = ParticipantLimit 2
+    with (return $ app (Config conn pw limit)) $ do
+        describe "GET /" $ do
+            it "responds with 200" $ do
+                get "/" `shouldRespondWith` 200
+            it "has some FAQ entries" $ do
+                get "/" `shouldRespondWith` (successAndContains "Warum muss ich mich dieses Jahr überhaupt anmelden?")
 
 successAndContains :: T.Text -> ResponseMatcher
 successAndContains text =
