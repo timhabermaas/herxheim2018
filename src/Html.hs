@@ -134,32 +134,31 @@ registerPage view isOverLimit = layout $ do
                 H.div ! A.class_ "form-group d-none" $ do
                     label "Name" "botField" view
                     DH.inputText "botField" view ! A.class_ "form-control"
-                    DH.errorList "botField" (modifiedView view)
                 H.div ! A.class_ "form-group" $ do
                     label "Name" "name" view
                     DH.inputText "name" view ! A.class_ "form-control"
-                    DH.errorList "name" (modifiedView view)
+                    formErrorMessage "name" view
                 H.div ! A.class_ "form-group" $ do
                     label "Geburtsdatum" "birthday" view
                     DH.inputText "birthday" view ! A.class_ "form-control"
-                    DH.errorList "birthday" (modifiedView view)
+                    formErrorMessage "birthday" view
                 H.div ! A.class_ "form-group" $ do
                     label "Straße" "street" view
                     DH.inputText "street" view ! A.class_ "form-control"
-                    DH.errorList "street" (modifiedView view)
+                    formErrorMessage "street" view
                 H.div ! A.class_ "row" $ do
                     H.div ! A.class_ "col-4 form-group" $ do
                         label "PLZ" "postalCode" view
                         DH.inputText "postalCode" view ! A.class_ "form-control"
-                        DH.errorList "postalCode" (modifiedView view)
+                        formErrorMessage "postalCode" view
                     H.div ! A.class_ "col-8 form-group" $ do
                         label "Stadt" "city" view
                         DH.inputText "city" view ! A.class_ "form-control"
-                        DH.errorList "city" (modifiedView view)
+                        formErrorMessage "city" view
                 H.div ! A.class_ "form-group" $ do
                     label "Land" "country" view
                     DH.inputSelect "country" (modifiedView view) ! A.class_ "form-control"
-                    DH.errorList "country" (modifiedView view)
+                    formErrorMessage "country" view
                 renderUnless isOverLimit $ do
                     H.div ! A.class_ "form-group" $ do
                         H.h4 "Übernachtung"
@@ -183,6 +182,13 @@ registerPage view isOverLimit = layout $ do
                 " kontaktieren um deine Daten und somit deine Anmeldung löschen zu lassen. "
                 "Alle Daten werden noch bis 30 Tage nach der Convention (11.11.2018) gespeichert "
                 "und dann gelöscht."
+
+
+formErrorMessage :: T.Text -> DV.View T.Text -> Html
+formErrorMessage ref view =
+    case DV.errors ref view of
+        [] -> mempty
+        es -> H.small ! A.class_ "text-danger" $ H.toHtml $ T.intercalate " " es
 
 registrationEmail :: T.Text
 registrationEmail = "herxheim.convention@gmail.com"
