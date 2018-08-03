@@ -110,13 +110,26 @@ successPage = layout $ do
 modifiedView :: DV.View T.Text -> DV.View H.Html
 modifiedView = fmap H.toHtml
 
-registerPage :: DV.View T.Text -> H.Html
-registerPage view = layout $ do
+alert :: T.Text -> H.Html
+alert text = do
+    H.div ! A.class_ "alert alert-danger" $ H.toHtml text
+
+renderIf :: Bool -> H.Html -> H.Html
+renderIf True h = h
+renderIf False _ = mempty
+
+renderUnless :: Bool -> H.Html -> H.Html
+renderUnless b h = renderIf (not b) h
+
+registerPage :: DV.View T.Text -> Bool -> H.Html
+registerPage view isOverLimit = layout $ do
     row $ do
         col 12 $ do
             H.h1 ! A.class_ "mt-3" $ "Herxheim-Anmeldung 2018"
     row $ do
         col 6 $ do
+            renderIf isOverLimit $ do
+                alert "Leider sind schon alle Schlafplätze belegt. Du kannst dich aber trotzdem anmelden und vorbei kommen, solange du dir einen eigenen Schlafplatz organisierst."
             H.form ! A.action "/register" ! A.method "post" $ do
                 H.div ! A.class_ "form-group d-none" $ do
                     label "Name" "botField" view
@@ -147,9 +160,10 @@ registerPage view = layout $ do
                     label "Land" "country" view
                     DH.inputSelect "country" (modifiedView view) ! A.class_ "form-control"
                     DH.errorList "country" (modifiedView view)
-                H.div ! A.class_ "form-group" $ do
-                    H.h4 "Übernachtung"
-                    bootstrapRadios "sleepover" (modifiedView view)
+                renderUnless isOverLimit $ do
+                    H.div ! A.class_ "form-group" $ do
+                        H.h4 "Übernachtung"
+                        bootstrapRadios "sleepover" (modifiedView view)
                 H.div ! A.class_ "form-group" $ do
                     H.input ! A.class_ "btn btn-primary" ! A.type_ "submit" ! A.value "Anmelden"
         col 6 $ do

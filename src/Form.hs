@@ -12,8 +12,8 @@ import qualified Data.Text as T
 
 data BotStatus = IsBot | IsHuman
 
-registerForm :: (Monad m) => DF.Form T.Text m (BotStatus, Participant)
-registerForm =
+registerForm :: (Monad m) => Bool -> DF.Form T.Text m (BotStatus, Participant)
+registerForm isOverLimit =
     (,) <$> botField
         <*> participant
   where
@@ -24,8 +24,13 @@ registerForm =
                               <*> "street" DF..: mustBePresent (DF.text Nothing)
                               <*> "postalCode" DF..: mustBePresent (DF.text Nothing)
                               <*> "city" DF..: mustBePresent (DF.text Nothing)
-                              <*> "sleepover" DF..: DF.choice [(FridayNight, "Freitag"), (SaturdayNight, "Samstag"), (AllNights, "Freitag und Samstag"), (NoNights, "Keine Übernachtung")] (Just AllNights)
+                              <*> optionalSleepover
                               <*> "country" DF..: DF.choice countries (Just "Deutschland")
+    optionalSleepover =
+        if isOverLimit
+            then pure NoNights
+            else "sleepover" DF..: DF.choice [(FridayNight, "Freitag"), (SaturdayNight, "Samstag"), (AllNights, "Freitag und Samstag"), (NoNights, "Keine Übernachtung")] (Just AllNights)
+
 
 mustBePresent :: (Monad m) => DF.Form T.Text m T.Text -> DF.Form T.Text m T.Text
 mustBePresent = DF.check "can't be blank" notEmpty

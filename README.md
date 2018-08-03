@@ -13,8 +13,17 @@ $ stack build
 
 ```sh
 $ createdb herxheim2018
-$ env PORT=8080 ADMIN_PASSWORD=admin DATABASE_URL='postgres://localhost/herxheim2018' stack exec herxheim2018-exe
+$ env PORT=8080 PARTICIPANT_LIMIT=120 ADMIN_PASSWORD=admin DATABASE_URL='postgres://localhost/herxheim2018' stack exec herxheim2018-exe
 ```
+
+### Environment variables
+
+The following environment variables need to be set:
+
+* `DATABASE_URL` (string): A PostgreSQL database connection string
+* `PORT` (number): The port the web server should run on
+* `ADMIN_PASSWORD` (string): The password for the _HTTP basic authentication_ protected admin area
+* `PARTICIPANT_LIMIT` (number): The maximum number of participants allowed before closing sleepover registration
 
 ## Run the tests
 

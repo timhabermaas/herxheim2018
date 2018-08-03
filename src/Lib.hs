@@ -52,11 +52,14 @@ type API
 
 newtype AdminPassword = AdminPassword T.Text
 
-startApp :: String -> Int -> AdminPassword -> IO ()
-startApp dbUrl port pw = do
+data Config = Config { configDbConnection :: Db.Connection, configAdminPassword :: AdminPassword, configParticipantLimit :: ParticipantLimit }
+
+startApp :: String -> Int -> Int -> AdminPassword -> IO ()
+startApp dbUrl port limit pw = do
     conn <- Db.connect dbUrl
     Db.migrate conn
-    run port $ logStdoutDev $ app conn pw
+    let config = Config { configDbConnection = conn, configAdminPassword = pw, configParticipantLimit = ParticipantLimit limit }
+    run port $ logStdoutDev $ app config
 
 authCheck :: AdminPassword -> BasicAuthCheck ()
 authCheck (AdminPassword pw) =
@@ -70,25 +73,34 @@ authCheck (AdminPassword pw) =
 authServerContext :: AdminPassword -> Context (BasicAuthCheck () ': '[])
 authServerContext pw = (authCheck pw) :. EmptyContext
 
-app :: Db.Connection -> AdminPassword -> Application
-app conn pw = serveWithContext api (authServerContext pw) (server conn)
+app :: Config -> Application
+app Config{..} =
+    serveWithContext api (authServerContext configAdminPassword) (server configDbConnection configParticipantLimit)
 
 api :: Proxy API
 api = Proxy
 
-server :: Db.Connection -> Server API
-server conn =
-         registerHandler
-    :<|> postRegisterHandler conn
+server :: Db.Connection -> ParticipantLimit -> Server API
+server conn limit =
+         registerHandler conn limit
+    :<|> postRegisterHandler conn limit
     :<|> successHandler
     :<|> registrationsHandler conn
     :<|> registrationsCsvHandler conn
     :<|> deleteRegistrationsHandler conn
 
-registerHandler :: Handler Page.Html
-registerHandler = do
-    view <- DF.getForm "Registration" Form.registerForm
-    pure $ Page.registerPage view
+isOverLimit :: Db.Connection -> ParticipantLimit -> IO Bool
+isOverLimit conn (ParticipantLimit limit) = do
+    participants <- liftIO $ Db.allRegistrations conn
+    let staysOvernight Db.DbParticipant{..} = dbParticipantSleepovers /= NoNights
+    let overnightCount = length $ filter staysOvernight participants
+    pure $ overnightCount >= limit
+
+registerHandler :: Db.Connection -> ParticipantLimit -> Handler Page.Html
+registerHandler conn limit = do
+    overLimit <- liftIO $ isOverLimit conn limit
+    view <- DF.getForm "Registration" $ Form.registerForm overLimit
+    pure $ Page.registerPage view overLimit
 
 registrationsHandler :: Db.Connection -> () -> Handler Page.Html
 registrationsHandler conn _ = do
@@ -124,14 +136,15 @@ registrationsCsvHandler conn _ = do
     let headers = fixEncoding <$> V.fromList [ "Name", "Adresse", "Land", "Übernachtung" ]
     pure $ Csv.encodeByName headers $ fmap CsvParticipant registrations
 
-postRegisterHandler :: Db.Connection -> [(T.Text, T.Text)] -> Handler Page.Html
-postRegisterHandler conn body = do
-    r <- DF.postForm "Registration" Form.registerForm $ servantPathEnv body
+postRegisterHandler :: Db.Connection -> ParticipantLimit -> [(T.Text, T.Text)] -> Handler Page.Html
+postRegisterHandler conn limit body = do
+    overLimit <- liftIO $ isOverLimit conn limit
+    r <- DF.postForm "Registration" (Form.registerForm overLimit) $ servantPathEnv body
     case r of
         (view, Nothing) -> do
-            liftIO $ putStrLn $ show view
-            pure $ Page.registerPage view
-        (_, Just (botStatus, registration)) -> do
+            liftIO $ print view
+            pure $ Page.registerPage view overLimit
+        (_, Just (botStatus, registration)) ->
             case botStatus of
                 Form.IsBot -> redirectTo "/success"
                 Form.IsHuman -> do

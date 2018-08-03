@@ -2,6 +2,7 @@
 
 module Types
     ( Participant(..)
+    , ParticipantLimit(..)
     , Sleepover(..)
     , ParticipantId(..)
     ) where
@@ -23,3 +24,5 @@ data Participant = Participant
     , participantSleepovers :: Sleepover
     , participantCountry :: T.Text
     } deriving (Show)
+
+newtype ParticipantLimit = ParticipantLimit Int
