@@ -8,7 +8,9 @@ module Form
 
 import Types
 import qualified Text.Digestive.Form as DF
+import qualified Text.Digestive.Types as DT
 import qualified Data.Text as T
+import Data.Time.Calendar (Day, fromGregorianValid)
 
 data BotStatus = IsBot | IsHuman
 
@@ -20,16 +22,46 @@ registerForm isOverLimit =
     -- Preventing bot form submissions by checking for a form field not being filled out.
     botField = (\t -> if T.null t then IsHuman else IsBot) <$> "botField" DF..: DF.text Nothing
     participant = Participant <$> "name" DF..: mustBePresent (DF.text Nothing)
-                              <*> "birthday" DF..: DF.dateFormlet "%-d.%-m.%Y" Nothing
+                              <*> "birthday" DF..: birthdayFields
                               <*> "street" DF..: mustBePresent (DF.text Nothing)
                               <*> "postalCode" DF..: mustBePresent (DF.text Nothing)
                               <*> "city" DF..: mustBePresent (DF.text Nothing)
                               <*> optionalSleepover
                               <*> "country" DF..: DF.choice countries (Just "Deutschland")
+
     optionalSleepover =
         if isOverLimit
             then pure NoNights
             else "sleepover" DF..: DF.choice [(FridayNight, "Von Freitag auf Samstag"), (SaturdayNight, "Von Samstag auf Sonntag"), (AllNights, "An beiden Tagen"), (NoNights, "Keine Übernachtung")] (Just AllNights)
+
+birthdayFields :: Monad m => DF.Form T.Text m Day
+birthdayFields =
+    DF.validate (maybe (DT.Error "kein gültiges Datum") DT.Success)
+  $ fromGregorianValid <$> "year" DF..: DF.choice years (Just 1990)
+                       <*> "month" DF..: DF.choice months (Just 1)
+                       <*> "day" DF..: DF.choice days (Just 1)
+  where
+    years :: [(Integer, T.Text)]
+    years = fmap (\y -> (y, T.pack $ show y)) [1850..2018]
+
+    months :: [(Int, T.Text)]
+    months =
+        [ (1, "Januar")
+        , (2, "Februar")
+        , (3, "März")
+        , (4, "April")
+        , (5, "Mai")
+        , (6, "Juni")
+        , (7, "Juli")
+        , (8, "August")
+        , (9, "September")
+        , (10, "Oktober")
+        , (11, "November")
+        , (12, "Dezember")
+        ]
+
+    days :: [(Int, T.Text)]
+    days = fmap (\y -> (y, T.pack $ show y)) [1..31]
 
 
 mustBePresent :: (Monad m) => DF.Form T.Text m T.Text -> DF.Form T.Text m T.Text

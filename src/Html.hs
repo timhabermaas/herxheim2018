@@ -34,12 +34,10 @@ layout inner = do
             H.title "Herxheim Convention 2018"
             H.link ! A.rel "stylesheet" ! A.type_ "text/css" ! A.href "https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css"
             H.link ! A.rel "stylesheet" ! A.type_ "text/css" ! A.href "https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
-            H.script ! A.src "https://cdn.jsdelivr.net/npm/flatpickr" $ ""
         H.body $ do
             H.div ! A.class_ "container" $ do
                 H.div ! A.class_ "mb-3" $ mempty
                 inner
-            H.script $ "flatpickr(document.getElementById('Registration.birthday'), { dateFormat: 'd.m.Y'})"
 
 registrationListPage :: [Db.DbParticipant] -> H.Html
 registrationListPage participants = layout $ do
@@ -143,8 +141,16 @@ registerPage view isOverLimit = layout $ do
                     formErrorMessage "name" view
                 H.div ! A.class_ "form-group" $ do
                     label "Geburtsdatum" "birthday" view
-                    DH.inputText "birthday" view ! A.class_ "form-control"
-                    formErrorMessage "birthday" view
+                    row $ do
+                        H.div ! A.class_ "col-sm-3" $ do
+                            DH.inputSelect "birthday.day" (modifiedView view) ! A.class_ "form-control"
+                        H.div ! A.class_ "col-sm-6 mt-2 mt-sm-0" $ do
+                            DH.inputSelect "birthday.month" (modifiedView view) ! A.class_ "form-control"
+                        H.div ! A.class_ "col-sm-3 mt-2 mt-sm-0" $ do
+                            DH.inputSelect "birthday.year" (modifiedView view) ! A.class_ "form-control"
+                    row $ do
+                        col 12 $ do
+                            formErrorMessage "birthday" view
                 H.div ! A.class_ "form-group" $ do
                     label "Straße" "street" view
                     DH.inputText "street" view ! A.class_ "form-control"
