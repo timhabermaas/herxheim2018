@@ -28,7 +28,10 @@ registerForm isOverLimit =
                               <*> "city" DF..: mustBePresent (DF.text Nothing)
                               <*> optionalSleepover
                               <*> "country" DF..: DF.choice countries (Just "Deutschland")
+                              <*> "comment" DF..: optionalText
 
+    optionalText =
+        (\t -> if T.null t then Nothing else Just t) <$> DF.text Nothing
     optionalSleepover =
         if isOverLimit
             then pure NoNights

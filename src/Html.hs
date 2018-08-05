@@ -52,6 +52,7 @@ registrationListPage participants = layout $ do
                         H.th "Land"
                         H.th "Übernachtung" ! A.colspan "2"
                         H.th "Angemeldet am"
+                        H.th "Anmerkungen"
                         H.th "Aktionen"
                     H.tr $ do
                         H.th ""
@@ -60,6 +61,7 @@ registrationListPage participants = layout $ do
                         H.th ""
                         H.th ! A.class_ "text-center" $ "Fr->Sa"
                         H.th ! A.class_ "text-center" $ "Sa->So"
+                        H.th ""
                         H.th ""
                         H.th ""
                 H.tbody $ mapM_ participantRow participants
@@ -71,6 +73,7 @@ registrationListPage participants = layout $ do
                         H.th ""
                         H.th ! A.class_ "text-right" $ H.toHtml $ length $ filter (\p -> Db.dbParticipantSleepovers p == AllNights || Db.dbParticipantSleepovers p == FridayNight) participants
                         H.th ! A.class_ "text-right" $ H.toHtml $ length $ filter (\p -> Db.dbParticipantSleepovers p == AllNights || Db.dbParticipantSleepovers p == SaturdayNight) participants
+                        H.th ""
                         H.th ""
                         H.th ""
     row $ do
@@ -86,6 +89,7 @@ registrationListPage participants = layout $ do
             H.td ! A.class_ "text-center" $ friday dbParticipantSleepovers
             H.td ! A.class_ "text-center" $ saturday dbParticipantSleepovers
             H.td $ H.toHtml $ formatTime defaultTimeLocale "%d.%m.%Y %H:%M Uhr" $ utcToBerlin dbParticipantRegisteredAt
+            H.td $ H.toHtml $ maybe "" id dbParticipantComment
             H.td $ do
                 H.form ! A.action (H.toValue $ "/registrations/" <> idToText dbParticipantId <> "/delete")  ! A.method "post" $ do
                     H.input ! A.onclick (H.toValue $ "return confirm('Willst du wirklich ' + '" <> dbParticipantName <> "' + ' ausladen?');") ! A.class_ "btn btn-danger" ! A.type_ "submit" ! A.name "delete" ! A.value "Löschen"
@@ -172,6 +176,10 @@ registerPage view isOverLimit = layout $ do
                     H.div ! A.class_ "form-group" $ do
                         H.h4 "Übernachtung"
                         bootstrapRadios "sleepover" (modifiedView view)
+                H.div ! A.class_ "form-group" $ do
+                    label "Anmerkungen für die Orgas" "comment" view
+                    DH.inputTextArea Nothing Nothing "comment" (modifiedView view) ! A.class_ "form-control"
+                    formErrorMessage "comment" view
                 H.div ! A.class_ "form-group" $ do
                     H.input ! A.class_ "btn btn-primary" ! A.type_ "submit" ! A.value "Anmelden"
         col 6 $ do

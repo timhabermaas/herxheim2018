@@ -23,6 +23,7 @@ data Participant = Participant
     , participantCity :: T.Text
     , participantSleepovers :: Sleepover
     , participantCountry :: T.Text
+    , participantComment :: Maybe T.Text
     } deriving (Show)
 
 newtype ParticipantLimit = ParticipantLimit Int
