@@ -49,11 +49,16 @@ registrationListPage participants (ParticipantLimit participationLimit) = layout
     row $ do
         col 12 $ do
             H.div ! A.class_ "alert alert-primary" $ do
-                H.strong $ do
-                    H.toHtml $ maxSleepCount sleepovers
-                    " von "
-                    H.toHtml $ participationLimit
-                " Übernachtungsplätze belegt"
+                H.ul $ do
+                    H.li $ do
+                        H.strong $ do
+                            H.toHtml $ maxSleepCount sleepovers
+                            " von "
+                            H.toHtml $ participationLimit
+                        " Übernachtungsplätze belegt"
+                    H.li $ do
+                        H.strong $ H.toHtml $ length participants
+                        " Anmeldungen"
 
     row $ do
         col 12 $ do
