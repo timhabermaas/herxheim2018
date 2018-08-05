@@ -177,7 +177,7 @@ registerPage view isOverLimit = layout $ do
                         H.h4 "Übernachtung"
                         bootstrapRadios "sleepover" (modifiedView view)
                 H.div ! A.class_ "form-group" $ do
-                    label "Anmerkungen für die Orgas" "comment" view
+                    label "Willst du uns noch etwas mitteilen?" "comment" view
                     DH.inputTextArea Nothing Nothing "comment" (modifiedView view) ! A.class_ "form-control"
                     formErrorMessage "comment" view
                 H.div ! A.class_ "form-group" $ do
