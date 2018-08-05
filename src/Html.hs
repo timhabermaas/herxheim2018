@@ -149,7 +149,7 @@ registerPage :: DV.View T.Text -> Bool -> H.Html
 registerPage view isOverLimit = layout $ do
     row $ do
         col 12 $ do
-            H.h1 "Herxheim-Anmeldung 2018"
+            H.h1 ! A.class_ "mb-4" $ "Anmeldung zum P(f)älzer Jongliertreffe(n) 2018"
     row $ do
         col 6 $ do
             renderIf isOverLimit $ do
