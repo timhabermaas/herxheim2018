@@ -34,6 +34,7 @@ import qualified Html as Page
 import qualified Form as Form
 import qualified Data.Maybe as M
 import Types
+import Util
 
 data CSV
 
@@ -86,18 +87,14 @@ server conn limit =
          registerHandler conn limit
     :<|> postRegisterHandler conn limit
     :<|> successHandler
-    :<|> registrationsHandler conn
+    :<|> registrationsHandler conn limit
     :<|> registrationsCsvHandler conn
     :<|> deleteRegistrationsHandler conn
 
 isOverLimit :: Db.Connection -> ParticipantLimit -> IO Bool
 isOverLimit conn (ParticipantLimit limit) = do
-    participants <- liftIO $ Db.allRegistrations conn
-    let staysOvernightOnFriday Db.DbParticipant{..} = dbParticipantSleepovers == AllNights || dbParticipantSleepovers == FridayNight
-    let staysOvernightOnSaturday Db.DbParticipant{..} = dbParticipantSleepovers == AllNights || dbParticipantSleepovers == SaturdayNight
-    -- Taking the maximum of both days because sleepovers [SaturdayNight, FridayNight] only take space for one person.
-    let overnightCount = max (length $ filter staysOvernightOnFriday participants) (length $ filter staysOvernightOnSaturday participants)
-    pure $ overnightCount >= limit
+    sleepovers <- liftIO $ fmap Db.dbParticipantSleepovers <$> Db.allRegistrations conn
+    pure $ maxSleepCount sleepovers >= limit
 
 registerHandler :: Db.Connection -> ParticipantLimit -> Handler Page.Html
 registerHandler conn limit = do
@@ -105,10 +102,10 @@ registerHandler conn limit = do
     view <- DF.getForm "Registration" $ Form.registerForm overLimit
     pure $ Page.registerPage view overLimit
 
-registrationsHandler :: Db.Connection -> () -> Handler Page.Html
-registrationsHandler conn _ = do
+registrationsHandler :: Db.Connection -> ParticipantLimit -> () -> Handler Page.Html
+registrationsHandler conn limit _ = do
     registrations <- liftIO $ Db.allRegistrations conn
-    pure $ Page.registrationListPage registrations
+    pure $ Page.registrationListPage registrations limit
 
 
 -- Using newtype wrapper for Participant because the canonical CSV decoder/encoder for the

@@ -21,6 +21,7 @@ import Data.Time.LocalTime (utcToZonedTime, hoursToTimeZone, ZonedTime)
 
 import qualified Db as Db
 import Types
+import Util
 
 type Html = H.Html
 
@@ -39,8 +40,21 @@ layout inner = do
                 H.div ! A.class_ "mb-3" $ mempty
                 inner
 
-registrationListPage :: [Db.DbParticipant] -> H.Html
-registrationListPage participants = layout $ do
+registrationListPage :: [Db.DbParticipant] -> ParticipantLimit -> H.Html
+registrationListPage participants (ParticipantLimit participationLimit) = layout $ do
+    let sleepovers = fmap Db.dbParticipantSleepovers participants
+    row $ do
+        col 12 $ do
+            H.h1 "Anmeldungen"
+    row $ do
+        col 12 $ do
+            H.div ! A.class_ "alert alert-primary" $ do
+                H.strong $ do
+                    H.toHtml $ maxSleepCount sleepovers
+                    " von "
+                    H.toHtml $ participationLimit
+                " Übernachtungsplätze belegt"
+
     row $ do
         col 12 $ do
             H.table ! A.class_ "table" $ do
@@ -71,8 +85,8 @@ registrationListPage participants = layout $ do
                         H.th ""
                         H.th ""
                         H.th ""
-                        H.th ! A.class_ "text-right" $ H.toHtml $ length $ filter (\p -> Db.dbParticipantSleepovers p == AllNights || Db.dbParticipantSleepovers p == FridayNight) participants
-                        H.th ! A.class_ "text-right" $ H.toHtml $ length $ filter (\p -> Db.dbParticipantSleepovers p == AllNights || Db.dbParticipantSleepovers p == SaturdayNight) participants
+                        H.th ! A.class_ "text-right" $ H.toHtml $ fridaySleepCount sleepovers
+                        H.th ! A.class_ "text-right" $ H.toHtml $ saturdaySleepCount sleepovers
                         H.th ""
                         H.th ""
                         H.th ""

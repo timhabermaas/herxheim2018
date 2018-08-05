@@ -21,6 +21,7 @@ library
                      , RegistrationsTable
                      , Form
                      , Types
+                     , Util
   ghc-options:         -Wall
   build-depends:       base >= 4.7 && < 5
                      , beam-core
