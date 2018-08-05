@@ -148,9 +148,9 @@ registerPage view isOverLimit = layout $ do
                     row $ do
                         H.div ! A.class_ "col-sm-3" $ do
                             DH.inputSelect "birthday.day" (modifiedView view) ! A.class_ "form-control"
-                        H.div ! A.class_ "col-sm-6 mt-2 mt-sm-0" $ do
+                        H.div ! A.class_ "col-sm-5 mt-2 mt-sm-0" $ do
                             DH.inputSelect "birthday.month" (modifiedView view) ! A.class_ "form-control"
-                        H.div ! A.class_ "col-sm-3 mt-2 mt-sm-0" $ do
+                        H.div ! A.class_ "col-sm-4 mt-2 mt-sm-0" $ do
                             DH.inputSelect "birthday.year" (modifiedView view) ! A.class_ "form-control"
                     row $ do
                         col 12 $ do

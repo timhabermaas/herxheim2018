@@ -93,8 +93,10 @@ server conn limit =
 isOverLimit :: Db.Connection -> ParticipantLimit -> IO Bool
 isOverLimit conn (ParticipantLimit limit) = do
     participants <- liftIO $ Db.allRegistrations conn
-    let staysOvernight Db.DbParticipant{..} = dbParticipantSleepovers /= NoNights
-    let overnightCount = length $ filter staysOvernight participants
+    let staysOvernightOnFriday Db.DbParticipant{..} = dbParticipantSleepovers == AllNights || dbParticipantSleepovers == FridayNight
+    let staysOvernightOnSaturday Db.DbParticipant{..} = dbParticipantSleepovers == AllNights || dbParticipantSleepovers == SaturdayNight
+    -- Taking the maximum of both days because sleepovers [SaturdayNight, FridayNight] only take space for one person.
+    let overnightCount = max (length $ filter staysOvernightOnFriday participants) (length $ filter staysOvernightOnSaturday participants)
     pure $ overnightCount >= limit
 
 registerHandler :: Db.Connection -> ParticipantLimit -> Handler Page.Html
