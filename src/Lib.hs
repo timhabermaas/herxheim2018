@@ -124,7 +124,13 @@ fixEncoding = TE.encodeUtf8
 
 instance Csv.ToNamedRecord CsvParticipant where
     toNamedRecord (CsvParticipant Db.DbParticipant{..}) =
-        Csv.namedRecord [ "Name" Csv..= dbParticipantName, "Adresse" Csv..= TE.encodeUtf8 address, "Land" Csv..= TE.encodeUtf8 dbParticipantCountry, fixEncoding "Übernachtung" Csv..= sleeping dbParticipantSleepovers ]
+        Csv.namedRecord
+            [ "Name" Csv..= dbParticipantName
+            , "Adresse" Csv..= TE.encodeUtf8 address
+            , "Land" Csv..= TE.encodeUtf8 dbParticipantCountry
+            , fixEncoding "Übernachtung" Csv..= sleeping dbParticipantSleepovers
+            , "Anmerkung" Csv..= (TE.encodeUtf8 <$> dbParticipantComment)
+            ]
       where
         address = (dbParticipantStreet <> ", " <> dbParticipantPostalCode <> " " <> dbParticipantCity) :: T.Text
         sleeping s = case s of
@@ -136,7 +142,7 @@ instance Csv.ToNamedRecord CsvParticipant where
 registrationsCsvHandler :: Db.Connection -> () -> Handler BSL.ByteString
 registrationsCsvHandler conn _ = do
     registrations <- liftIO $ Db.allRegistrations conn
-    let headers = fixEncoding <$> V.fromList [ "Name", "Adresse", "Land", "Übernachtung" ]
+    let headers = fixEncoding <$> V.fromList [ "Name", "Adresse", "Land", "Übernachtung", "Anmerkung" ]
     pure $ Csv.encodeByName headers $ fmap CsvParticipant registrations
 
 postRegisterHandler :: Db.Connection -> ParticipantLimit -> [(T.Text, T.Text)] -> Handler Page.Html
