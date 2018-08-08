@@ -29,6 +29,7 @@ registerForm isOverLimit =
                               <*> optionalSleepover
                               <*> "country" DF..: DF.choice countries (Just "Deutschland")
                               <*> "comment" DF..: optionalText
+                              <*> "email" DF..: optionalText
 
     optionalText =
         (\t -> if T.null t then Nothing else Just t) <$> DF.text Nothing

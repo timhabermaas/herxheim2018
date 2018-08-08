@@ -68,18 +68,18 @@ registrationListPage participants (ParticipantLimit participationLimit) = layout
                         H.th "Name"
                         H.th "Geburtsdatum"
                         H.th "Adresse"
-                        H.th "Land"
                         H.th "Übernachtung" ! A.colspan "2"
                         H.th "Angemeldet am"
                         H.th "Anmerkungen"
+                        H.th "E-Mail"
                         H.th "Aktionen"
                     H.tr $ do
                         H.th ""
                         H.th ""
                         H.th ""
-                        H.th ""
                         H.th ! A.class_ "text-center" $ "Fr->Sa"
                         H.th ! A.class_ "text-center" $ "Sa->So"
+                        H.th ""
                         H.th ""
                         H.th ""
                         H.th ""
@@ -89,9 +89,9 @@ registrationListPage participants (ParticipantLimit participationLimit) = layout
                         H.th $ H.toHtml $ length participants
                         H.th ""
                         H.th ""
-                        H.th ""
                         H.th ! A.class_ "text-right" $ H.toHtml $ fridaySleepCount sleepovers
                         H.th ! A.class_ "text-right" $ H.toHtml $ saturdaySleepCount sleepovers
+                        H.th ""
                         H.th ""
                         H.th ""
                         H.th ""
@@ -104,17 +104,17 @@ registrationListPage participants (ParticipantLimit participationLimit) = layout
             H.td $ H.toHtml dbParticipantName
             H.td $ H.toHtml $ birthday dbParticipantBirthday
             H.td $ H.toHtml $ address p
-            H.td $ H.toHtml dbParticipantCountry
             H.td ! A.class_ "text-center" $ friday dbParticipantSleepovers
             H.td ! A.class_ "text-center" $ saturday dbParticipantSleepovers
             H.td $ H.toHtml $ formatTime defaultTimeLocale "%d.%m.%Y %H:%M Uhr" $ utcToBerlin dbParticipantRegisteredAt
             H.td $ H.toHtml $ maybe "" id dbParticipantComment
+            H.td $ H.toHtml $ maybe "" id dbParticipantEmail
             H.td $ do
                 H.form ! A.action (H.toValue $ "/registrations/" <> idToText dbParticipantId <> "/delete")  ! A.method "post" $ do
                     H.input ! A.onclick (H.toValue $ "return confirm('Willst du wirklich ' + '" <> dbParticipantName <> "' + ' ausladen?');") ! A.class_ "btn btn-danger" ! A.type_ "submit" ! A.name "delete" ! A.value "Löschen"
     idToText (Db.DbId i) = show i
     birthday d = formatTime defaultTimeLocale "%d.%m.%Y" d
-    address Db.DbParticipant{..} = (dbParticipantStreet <> ", " <> dbParticipantPostalCode <> " " <> dbParticipantCity) :: T.Text
+    address Db.DbParticipant{..} = (dbParticipantStreet <> ", " <> dbParticipantPostalCode <> " " <> dbParticipantCity <> "(" <> dbParticipantCountry <> ")") :: T.Text
     friday FridayNight = "X"
     friday AllNights = "X"
     friday _ = ""
@@ -196,6 +196,12 @@ registerPage view isOverLimit = layout $ do
                         H.h4 "Übernachtung"
                         bootstrapRadios "sleepover" (modifiedView view)
                 H.div ! A.class_ "form-group" $ do
+                    label' "email" view $ do
+                        "E-Mail "
+                        H.small ! A.class_ "text-muted" $ "(optional)"
+                    DH.inputText "email" view ! A.class_ "form-control"
+                    formErrorMessage "email" view
+                H.div ! A.class_ "form-group" $ do
                     label "Willst du uns noch etwas mitteilen?" "comment" view
                     DH.inputTextArea Nothing Nothing "comment" (modifiedView view) ! A.class_ "form-control"
                     formErrorMessage "comment" view
@@ -237,6 +243,12 @@ label text name view =
     let ref = H.toValue $ DV.absoluteRef name view
     in
         H.label ! A.for ref $ H.toHtml text
+
+label' :: T.Text -> DV.View a -> Html -> Html
+label' name view inner =
+    let ref = H.toValue $ DV.absoluteRef name view
+    in
+        H.label ! A.for ref $ inner
 
 bootstrapRadios :: T.Text -> DV.View Html -> Html
 bootstrapRadios ref view =

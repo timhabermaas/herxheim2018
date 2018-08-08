@@ -39,6 +39,7 @@ data DbParticipant = DbParticipant
     , dbParticipantRegisteredAt :: UTCTime
     , dbParticipantSleepovers :: Sleepover
     , dbParticipantComment :: Maybe T.Text
+    , dbParticipantEmail :: Maybe T.Text
     } deriving (Show)
 
 newtype DbId a = DbId Int deriving (Show)
@@ -63,14 +64,14 @@ sleepoversToText AllNights = "both"
 sleepoversToText NoNights = "none"
 
 instance FromRow DbParticipant where
-    fromRow = DbParticipant <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+    fromRow = DbParticipant <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 newtype Connection = Connection PSQL.Connection
 
 saveRegistration :: Connection -> Participant -> IO ()
 saveRegistration (Connection conn) Participant{..} = do
     t <- getCurrentTime
-    void $ PSQL.execute conn "INSERT INTO participants (name, birthday, street, postalCode, city, country, registeredAt, sleepovers, comment) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)" (participantName, participantBirthday, participantStreet, participantPostalCode, participantCity, participantCountry, t, sleepoversToText participantSleepovers, participantComment)
+    void $ PSQL.execute conn "INSERT INTO participants (name, birthday, street, postalCode, city, country, registeredAt, sleepovers, comment, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" (participantName, participantBirthday, participantStreet, participantPostalCode, participantCity, participantCountry, t, sleepoversToText participantSleepovers, participantComment, participantEmail)
 
 deleteRegistration :: Connection -> DbId Participant -> IO ()
 deleteRegistration (Connection conn) (DbId id') = do
@@ -79,7 +80,7 @@ deleteRegistration (Connection conn) (DbId id') = do
 
 allRegistrations :: Connection -> IO [DbParticipant]
 allRegistrations (Connection conn) = do
-    PSQL.query_ conn "SELECT id, name, birthday, street, postalCode, city, country, registeredAt, sleepovers, comment FROM participants ORDER BY registeredAt DESC"
+    PSQL.query_ conn "SELECT id, name, birthday, street, postalCode, city, country, registeredAt, sleepovers, comment, email FROM participants ORDER BY registeredAt DESC"
 
 connect :: String -> IO Connection
 connect url = Connection <$> PSQL.connectPostgreSQL (BS.pack url)
@@ -100,4 +101,5 @@ migrate (Connection conn) =
         , "country text NOT NULL,"
         , "registeredAt timestamptz NOT NULL);"
         , "ALTER TABLE participants ADD COLUMN IF NOT EXISTS comment text;"
+        , "ALTER TABLE participants ADD COLUMN IF NOT EXISTS email text;"
         ]
