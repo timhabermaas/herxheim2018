@@ -56,5 +56,6 @@ table participants = Pandoc nullMeta [table']
         SaturdayNight -> "Nur Samstag"
         AllNights -> "Samstag und Sonntag"
         NoNights -> "Keine Übernachtung"
+        CouldntSelect -> "Keine Auswahl"
     plain s = Plain [Str s]
     plain' s = Plain [Str $ T.unpack s]

@@ -11,7 +11,8 @@ import qualified Data.Text as T
 import Data.Time.Calendar (Day)
 import Web.HttpApiData (FromHttpApiData)
 
-data Sleepover = FridayNight | SaturdayNight | AllNights | NoNights deriving (Show, Ord, Eq)
+-- CouldntSelect represents a participant which registered when all sleepover spots were already taken.
+data Sleepover = FridayNight | SaturdayNight | AllNights | NoNights | CouldntSelect deriving (Show, Ord, Eq)
 
 newtype ParticipantId = ParticipantId Int deriving (FromHttpApiData, Show)
 

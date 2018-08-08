@@ -135,6 +135,7 @@ instance Csv.ToNamedRecord CsvParticipant where
             SaturdayNight -> "Nur Samstag"
             AllNights -> "Samstag und Sonntag"
             NoNights -> "Keine Übernachtung"
+            CouldntSelect -> "Keine Auswahl"
 
 registrationsCsvHandler :: Db.Connection -> () -> Handler BSL.ByteString
 registrationsCsvHandler conn _ = do

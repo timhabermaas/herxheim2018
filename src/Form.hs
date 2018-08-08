@@ -35,7 +35,7 @@ registerForm isOverLimit =
         (\t -> if T.null t then Nothing else Just t) <$> DF.text Nothing
     optionalSleepover =
         if isOverLimit
-            then pure NoNights
+            then pure CouldntSelect
             else "sleepover" DF..: DF.choice [(FridayNight, "Von Freitag auf Samstag"), (SaturdayNight, "Von Samstag auf Sonntag"), (AllNights, "An beiden Tagen"), (NoNights, "Keine Übernachtung")] (Just AllNights)
 
 birthdayFields :: Monad m => DF.Form T.Text m Day

@@ -55,6 +55,7 @@ instance FromField Sleepover where
             "fr" -> return FridayNight
             "sa" -> return SaturdayNight
             "none" -> return NoNights
+            "n/a" -> return CouldntSelect
             _ -> fail "sleepover not of expected value"
 
 sleepoversToText :: Sleepover -> T.Text
@@ -62,6 +63,7 @@ sleepoversToText FridayNight = "fr"
 sleepoversToText SaturdayNight = "sa"
 sleepoversToText AllNights = "both"
 sleepoversToText NoNights = "none"
+sleepoversToText CouldntSelect = "n/a"
 
 instance FromRow DbParticipant where
     fromRow = DbParticipant <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
