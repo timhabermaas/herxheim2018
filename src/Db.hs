@@ -51,19 +51,23 @@ instance FromField Sleepover where
     fromField f bs = do
         value <- fromField f bs
         case value :: String of
-            "both" -> return AllNights
-            "fr" -> return FridayNight
-            "sa" -> return SaturdayNight
+            -- both, fr and sa are for backwards compability only.
+            -- We used to save the specific day on which the participant slept
+            -- at the convention.
+            "both" -> return GymSleeping
+            "fr" -> return GymSleeping
+            "sa" -> return GymSleeping
             "none" -> return NoNights
             "n/a" -> return CouldntSelect
+            "camping" -> return Camping
+            "gym" -> return GymSleeping
             _ -> fail "sleepover not of expected value"
 
 sleepoversToText :: Sleepover -> T.Text
-sleepoversToText FridayNight = "fr"
-sleepoversToText SaturdayNight = "sa"
-sleepoversToText AllNights = "both"
 sleepoversToText NoNights = "none"
 sleepoversToText CouldntSelect = "n/a"
+sleepoversToText Camping = "camping"
+sleepoversToText GymSleeping = "gym"
 
 instance FromRow DbParticipant where
     fromRow = DbParticipant <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field

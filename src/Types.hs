@@ -2,9 +2,12 @@
 
 module Types
     ( Participant(..)
-    , ParticipantLimit(..)
     , Sleepover(..)
     , ParticipantId(..)
+    , GymSleepingLimit(..)
+    , CampingSleepingLimit(..)
+    , GymSleepingLimitReached(..)
+    , CampingSleepingLimitReached(..)
     ) where
 
 import qualified Data.Text as T
@@ -12,7 +15,7 @@ import Data.Time.Calendar (Day)
 import Web.HttpApiData (FromHttpApiData)
 
 -- CouldntSelect represents a participant which registered when all sleepover spots were already taken.
-data Sleepover = FridayNight | SaturdayNight | AllNights | NoNights | CouldntSelect deriving (Show, Ord, Eq)
+data Sleepover = Camping | NoNights | GymSleeping | CouldntSelect deriving (Show, Ord, Eq)
 
 newtype ParticipantId = ParticipantId Int deriving (FromHttpApiData, Show)
 
@@ -28,4 +31,8 @@ data Participant = Participant
     , participantEmail :: Maybe T.Text
     } deriving (Show)
 
-newtype ParticipantLimit = ParticipantLimit Int
+newtype GymSleepingLimit = GymSleepingLimit Int
+newtype CampingSleepingLimit = CampingSleepingLimit Int
+
+data GymSleepingLimitReached = GymSleepingLimitReached | EnoughGymSleepingSpots deriving (Show, Eq)
+data CampingSleepingLimitReached = CampingSleepingLimitReached | EnoughTentSpots deriving (Show, Eq)

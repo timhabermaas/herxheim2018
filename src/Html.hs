@@ -40,8 +40,8 @@ layout inner = do
                 H.div ! A.class_ "mb-3" $ mempty
                 inner
 
-registrationListPage :: [Db.DbParticipant] -> ParticipantLimit -> H.Html
-registrationListPage participants (ParticipantLimit participationLimit) = layout $ do
+registrationListPage :: [Db.DbParticipant] -> (GymSleepingLimit, CampingSleepingLimit) -> H.Html
+registrationListPage participants (GymSleepingLimit gymSleepingLimit, CampingSleepingLimit campingLimit) = layout $ do
     let sleepovers = fmap Db.dbParticipantSleepovers participants
     row $ do
         col 12 $ do
@@ -52,10 +52,16 @@ registrationListPage participants (ParticipantLimit participationLimit) = layout
                 H.ul $ do
                     H.li $ do
                         H.strong $ do
-                            H.toHtml $ maxSleepCount sleepovers
+                            H.toHtml $ gymSleepCount sleepovers
                             " von "
-                            H.toHtml $ participationLimit
-                        " Übernachtungsplätze belegt"
+                            H.toHtml $ gymSleepingLimit
+                        " Übernachtungsplätze in Klassenzimmern belegt"
+                    H.li $ do
+                        H.strong $ do
+                            H.toHtml $ campingSleepCount sleepovers
+                            " von "
+                            H.toHtml $ campingLimit
+                        " Campingspots belegt"
                     H.li $ do
                         H.strong $ H.toHtml $ length participants
                         " Anmeldungen"
@@ -77,8 +83,8 @@ registrationListPage participants (ParticipantLimit participationLimit) = layout
                         H.th ""
                         H.th ""
                         H.th ""
-                        H.th ! A.class_ "text-center" $ "Fr->Sa"
-                        H.th ! A.class_ "text-center" $ "Sa->So"
+                        H.th ! A.class_ "text-center" $ "Klassenzimmer"
+                        H.th ! A.class_ "text-center" $ "Zelt"
                         H.th ""
                         H.th ""
                         H.th ""
@@ -89,8 +95,8 @@ registrationListPage participants (ParticipantLimit participationLimit) = layout
                         H.th $ H.toHtml $ length participants
                         H.th ""
                         H.th ""
-                        H.th ! A.class_ "text-right" $ H.toHtml $ fridaySleepCount sleepovers
-                        H.th ! A.class_ "text-right" $ H.toHtml $ saturdaySleepCount sleepovers
+                        H.th ! A.class_ "text-right" $ H.toHtml $ gymSleepCount sleepovers
+                        H.th ! A.class_ "text-right" $ H.toHtml $ campingSleepCount sleepovers
                         H.th ""
                         H.th ""
                         H.th ""
@@ -104,8 +110,8 @@ registrationListPage participants (ParticipantLimit participationLimit) = layout
             H.td $ H.toHtml dbParticipantName
             H.td $ H.toHtml $ birthday dbParticipantBirthday
             H.td $ H.toHtml $ address p
-            H.td ! A.class_ "text-center" $ friday dbParticipantSleepovers
-            H.td ! A.class_ "text-center" $ saturday dbParticipantSleepovers
+            H.td ! A.class_ "text-center" $ gym dbParticipantSleepovers
+            H.td ! A.class_ "text-center" $ tent dbParticipantSleepovers
             H.td $ H.toHtml $ formatTime defaultTimeLocale "%d.%m.%Y %H:%M Uhr" $ utcToBerlin dbParticipantRegisteredAt
             H.td $ H.toHtml $ maybe "" id dbParticipantComment
             H.td $ H.toHtml $ maybe "" id dbParticipantEmail
@@ -115,12 +121,10 @@ registrationListPage participants (ParticipantLimit participationLimit) = layout
     idToText (Db.DbId i) = show i
     birthday d = formatTime defaultTimeLocale "%d.%m.%Y" d
     address Db.DbParticipant{..} = (dbParticipantStreet <> ", " <> dbParticipantPostalCode <> " " <> dbParticipantCity <> "(" <> dbParticipantCountry <> ")") :: T.Text
-    friday FridayNight = "X"
-    friday AllNights = "X"
-    friday _ = ""
-    saturday SaturdayNight = "X"
-    saturday AllNights = "X"
-    saturday _ = ""
+    gym GymSleeping = "X"
+    gym _ = ""
+    tent Camping = "X"
+    tent _ = ""
 
 utcToBerlin :: UTCTime -> ZonedTime
 utcToBerlin = utcToZonedTime (hoursToTimeZone 2)
@@ -145,15 +149,20 @@ renderIf False _ = mempty
 renderUnless :: Bool -> H.Html -> H.Html
 renderUnless b h = renderIf (not b) h
 
-registerPage :: DV.View T.Text -> Bool -> H.Html
+noSleepingMessage :: (GymSleepingLimitReached, CampingSleepingLimitReached) -> H.Html
+noSleepingMessage (EnoughGymSleepingSpots, EnoughTentSpots) = mempty
+noSleepingMessage (EnoughGymSleepingSpots, CampingSleepingLimitReached) = mempty
+noSleepingMessage (GymSleepingLimitReached, CampingSleepingLimitReached) = alert "Leider sind schon alle Schlafplätze belegt. Du kannst dich aber trotzdem anmelden und vorbei kommen, solange du dir einen eigenen Schlafplatz organisierst."
+noSleepingMessage (GymSleepingLimitReached, EnoughTentSpots) = alert "Leider sind schon alle Schlafplätze in den Klassenzimmern belegt. Du kannst dich aber trotzdem anmelden und entweder im Zelt schlafen oder dir einen eigenen Schlafplatz organisieren."
+
+registerPage :: DV.View T.Text -> (GymSleepingLimitReached, CampingSleepingLimitReached) -> H.Html
 registerPage view isOverLimit = layout $ do
     row $ do
         col 12 $ do
             H.h1 ! A.class_ "mb-4" $ "Anmeldung zum P(f)älzer Jongliertreffe(n) 2018"
     row $ do
         col 6 $ do
-            renderIf isOverLimit $ do
-                alert "Leider sind schon alle Schlafplätze belegt. Du kannst dich aber trotzdem anmelden und vorbei kommen, solange du dir einen eigenen Schlafplatz organisierst."
+            noSleepingMessage isOverLimit
             H.form ! A.action "/register" ! A.method "post" $ do
                 H.div ! A.class_ "form-group d-none" $ do
                     label "Name" "botField" view
@@ -191,7 +200,7 @@ registerPage view isOverLimit = layout $ do
                     label "Land" "country" view
                     DH.inputSelect "country" (modifiedView view) ! A.class_ "form-control"
                     formErrorMessage "country" view
-                renderUnless isOverLimit $ do
+                renderUnless (isOverLimit == (GymSleepingLimitReached, CampingSleepingLimitReached)) $ do
                     H.div ! A.class_ "form-group" $ do
                         H.h4 "Übernachtung"
                         bootstrapRadios "sleepover" (modifiedView view)

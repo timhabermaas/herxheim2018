@@ -13,7 +13,7 @@ $ stack build
 
 ```sh
 $ createdb herxheim2018
-$ env PORT=8080 PARTICIPANT_LIMIT=120 ADMIN_PASSWORD=admin DATABASE_URL='postgres://localhost/herxheim2018' stack exec herxheim2018-exe
+$ env PORT=8080 SLEEPING_LIMIT=120 CAMPING_LIMIT=50 ADMIN_PASSWORD=admin DATABASE_URL='postgres://localhost/herxheim2018' stack exec herxheim2018-exe
 ```
 
 ### Environment variables

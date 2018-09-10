@@ -52,10 +52,9 @@ table participants = Pandoc nullMeta [table']
     address Db.DbParticipant{..} = dbParticipantStreet <> ", " <> dbParticipantPostalCode <> " " <> dbParticipantCity
     birthday d = formatTime defaultTimeLocale "%d.%m.%Y" d
     sleeping s = case s of
-        FridayNight -> "Nur Freitag"
-        SaturdayNight -> "Nur Samstag"
-        AllNights -> "Samstag und Sonntag"
+        GymSleeping -> "Klassenzimmer"
         NoNights -> "Keine Übernachtung"
         CouldntSelect -> "Keine Auswahl"
+        Camping -> "Zelt"
     plain s = Plain [Str s]
     plain' s = Plain [Str $ T.unpack s]

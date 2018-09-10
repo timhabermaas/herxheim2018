@@ -54,13 +54,17 @@ type API
 
 newtype AdminPassword = AdminPassword T.Text
 
-data Config = Config { configDbConnection :: Db.Connection, configAdminPassword :: AdminPassword, configParticipantLimit :: ParticipantLimit }
+data Config = Config
+    { configDbConnection :: Db.Connection
+    , configAdminPassword :: AdminPassword
+    , configSleepingLimits :: (GymSleepingLimit, CampingSleepingLimit)
+    }
 
-startApp :: String -> Int -> Int -> AdminPassword -> IO ()
-startApp dbUrl port limit pw = do
+startApp :: String -> Int -> Int -> Int -> AdminPassword -> IO ()
+startApp dbUrl port participationLimit campingLimit pw = do
     conn <- Db.connect dbUrl
     Db.migrate conn
-    let config = Config { configDbConnection = conn, configAdminPassword = pw, configParticipantLimit = ParticipantLimit limit }
+    let config = Config { configDbConnection = conn, configAdminPassword = pw, configSleepingLimits = (GymSleepingLimit participationLimit, CampingSleepingLimit campingLimit) }
     run port $ logStdoutDev $ app config
 
 authCheck :: AdminPassword -> BasicAuthCheck ()
@@ -77,35 +81,45 @@ authServerContext pw = (authCheck pw) :. EmptyContext
 
 app :: Config -> Application
 app Config{..} =
-    serveWithContext api (authServerContext configAdminPassword) (server configDbConnection configParticipantLimit)
+    serveWithContext api (authServerContext configAdminPassword) (server configDbConnection configSleepingLimits)
 
 api :: Proxy API
 api = Proxy
 
-server :: Db.Connection -> ParticipantLimit -> Server API
-server conn limit =
-         registerHandler conn limit
-    :<|> postRegisterHandler conn limit
+server :: Db.Connection -> (GymSleepingLimit, CampingSleepingLimit) -> Server API
+server conn limits =
+         registerHandler conn limits
+    :<|> postRegisterHandler conn limits
     :<|> successHandler
-    :<|> registrationsHandler conn limit
+    :<|> registrationsHandler conn limits
     :<|> registrationsCsvHandler conn
     :<|> deleteRegistrationsHandler conn
 
-isOverLimit :: Db.Connection -> ParticipantLimit -> IO Bool
-isOverLimit conn (ParticipantLimit limit) = do
+isOverLimit :: Db.Connection -> (GymSleepingLimit, CampingSleepingLimit) -> IO (GymSleepingLimitReached, CampingSleepingLimitReached)
+isOverLimit conn (GymSleepingLimit gymLimit, CampingSleepingLimit campingLimit) = do
     sleepovers <- liftIO $ fmap Db.dbParticipantSleepovers <$> Db.allRegistrations conn
-    pure $ maxSleepCount sleepovers >= limit
+    let gymLimitReached =
+            if gymSleepCount sleepovers >= gymLimit then
+                GymSleepingLimitReached
+            else
+                EnoughGymSleepingSpots
+    let campingLimitReached =
+            if campingSleepCount sleepovers >= campingLimit then
+                CampingSleepingLimitReached
+            else
+                EnoughTentSpots
+    pure (gymLimitReached, campingLimitReached)
 
-registerHandler :: Db.Connection -> ParticipantLimit -> Handler Page.Html
-registerHandler conn limit = do
-    overLimit <- liftIO $ isOverLimit conn limit
+registerHandler :: Db.Connection -> (GymSleepingLimit, CampingSleepingLimit) -> Handler Page.Html
+registerHandler conn limits = do
+    overLimit <- liftIO $ isOverLimit conn limits
     view <- DF.getForm "Registration" $ Form.registerForm overLimit
     pure $ Page.registerPage view overLimit
 
-registrationsHandler :: Db.Connection -> ParticipantLimit -> () -> Handler Page.Html
-registrationsHandler conn limit _ = do
+registrationsHandler :: Db.Connection -> (GymSleepingLimit, CampingSleepingLimit) -> () -> Handler Page.Html
+registrationsHandler conn limits _ = do
     registrations <- liftIO $ Db.allRegistrations conn
-    pure $ Page.registrationListPage registrations limit
+    pure $ Page.registrationListPage registrations limits
 
 
 -- Using newtype wrapper for Participant because the canonical CSV decoder/encoder for the
@@ -131,10 +145,9 @@ instance Csv.ToNamedRecord CsvParticipant where
       where
         address = (dbParticipantStreet <> ", " <> dbParticipantPostalCode <> " " <> dbParticipantCity) :: T.Text
         sleeping s = case s of
-            FridayNight -> "Nur Freitag" :: T.Text
-            SaturdayNight -> "Nur Samstag"
-            AllNights -> "Samstag und Sonntag"
-            NoNights -> "Keine Übernachtung"
+            NoNights -> "Keine Übernachtung" :: T.Text
+            Camping -> "Zelt"
+            GymSleeping -> "Klassenzimmer"
             CouldntSelect -> "Keine Auswahl"
 
 registrationsCsvHandler :: Db.Connection -> () -> Handler BSL.ByteString
@@ -143,9 +156,9 @@ registrationsCsvHandler conn _ = do
     let headers = fixEncoding <$> V.fromList [ "Name", "Adresse", "Land", "Übernachtung", "Anmerkung" ]
     pure $ Csv.encodeByName headers $ fmap CsvParticipant registrations
 
-postRegisterHandler :: Db.Connection -> ParticipantLimit -> [(T.Text, T.Text)] -> Handler Page.Html
-postRegisterHandler conn limit body = do
-    overLimit <- liftIO $ isOverLimit conn limit
+postRegisterHandler :: Db.Connection -> (GymSleepingLimit, CampingSleepingLimit) -> [(T.Text, T.Text)] -> Handler Page.Html
+postRegisterHandler conn limits body = do
+    overLimit <- liftIO $ isOverLimit conn limits
     r <- DF.postForm "Registration" (Form.registerForm overLimit) $ servantPathEnv body
     case r of
         (view, Nothing) -> do

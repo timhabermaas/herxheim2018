@@ -1,16 +1,12 @@
 module Util
-    ( fridaySleepCount
-    , saturdaySleepCount
-    , maxSleepCount
+    ( gymSleepCount
+    , campingSleepCount -- TODO: Rename
     ) where
 
 import Types
 
-fridaySleepCount :: [Sleepover] -> Int
-fridaySleepCount = length . filter (\s -> s == AllNights || s == FridayNight)
+gymSleepCount :: [Sleepover] -> Int
+gymSleepCount = length . filter (\s -> s == GymSleeping)
 
-saturdaySleepCount :: [Sleepover] -> Int
-saturdaySleepCount = length . filter (\s -> s == AllNights || s == SaturdayNight)
-
-maxSleepCount :: [Sleepover] -> Int
-maxSleepCount ss = max (fridaySleepCount ss) (saturdaySleepCount ss)
+campingSleepCount :: [Sleepover] -> Int
+campingSleepCount = length . filter (== Camping)

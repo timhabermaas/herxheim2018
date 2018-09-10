@@ -14,7 +14,7 @@ import Data.Time.Calendar (Day, fromGregorianValid)
 
 data BotStatus = IsBot | IsHuman
 
-registerForm :: (Monad m) => Bool -> DF.Form T.Text m (BotStatus, Participant)
+registerForm :: (Monad m) => (GymSleepingLimitReached, CampingSleepingLimitReached) -> DF.Form T.Text m (BotStatus, Participant)
 registerForm isOverLimit =
     (,) <$> botField
         <*> participant
@@ -34,9 +34,17 @@ registerForm isOverLimit =
     optionalText =
         (\t -> if T.null t then Nothing else Just t) <$> DF.text Nothing
     optionalSleepover =
-        if isOverLimit
-            then pure CouldntSelect
-            else "sleepover" DF..: DF.choice [(FridayNight, "Von Freitag auf Samstag"), (SaturdayNight, "Von Samstag auf Sonntag"), (AllNights, "An beiden Tagen"), (NoNights, "Keine Übernachtung")] (Just AllNights)
+        case isOverLimit of
+            (GymSleepingLimitReached, CampingSleepingLimitReached) -> pure CouldntSelect
+            (EnoughGymSleepingSpots, CampingSleepingLimitReached) -> "sleepover" DF..: DF.choice (filter (\(s, _) -> s /= Camping) allChoices) (Just GymSleeping)
+            (GymSleepingLimitReached, EnoughTentSpots) -> "sleepover" DF..: DF.choice (filter (\(s, _) -> s /= GymSleeping) allChoices) (Just Camping)
+            (EnoughGymSleepingSpots, EnoughTentSpots) -> "sleepover" DF..: DF.choice allChoices (Just GymSleeping)
+
+    allChoices =
+        [ (GymSleeping, "Ich schlafe im Klassenzimmer.")
+        , (Camping, "Ich schlafe im Zelt auf dem Schulgelände.")
+        , (NoNights, "Ich sorge für meine eigene Übernachtung.")
+        ]
 
 birthdayFields :: Monad m => DF.Form T.Text m Day
 birthdayFields =
