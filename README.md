@@ -23,7 +23,8 @@ The following environment variables need to be set:
 * `DATABASE_URL` (string): A PostgreSQL database connection string
 * `PORT` (number): The port the web server should run on
 * `ADMIN_PASSWORD` (string): The password for the _HTTP basic authentication_ protected admin area
-* `PARTICIPANT_LIMIT` (number): The maximum number of participants allowed before closing sleepover registration
+* `SLEEPING_LIMIT` (number): The maximum number of people allowed to sleep in the gym/class rooms
+* `CAMPING_LIMIT` (number): The maximum number of people allowed to camp
 
 ## Run the tests
 
