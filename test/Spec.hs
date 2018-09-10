@@ -23,7 +23,7 @@ main = do
 
 spec :: Db.Connection -> AdminPassword -> Spec
 spec conn pw = do
-    let limit = ParticipantLimit 2
+    let limit = (GymSleepingLimit 2, CampingSleepingLimit 0)
     with (return $ app (Config conn pw limit)) $ do
         describe "GET /" $ do
             it "responds with 200" $ do
