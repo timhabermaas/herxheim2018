@@ -50,7 +50,7 @@ type API
  :<|> "success" :> Get '[HTML] Page.Html
  :<|> "admin" :> BasicAuth "foo-realm" () :> Get '[HTML] Page.Html
  :<|> "registrations.csv" :> BasicAuth "foo-realm" () :> Get '[CSV] BSL.ByteString
- :<|> "registrations" :> Capture "participantId" ParticipantId :> "delete" :> Post '[HTML] Page.Html
+ :<|> "registrations" :> BasicAuth "foo-realm" () :> Capture "participantId" ParticipantId :> "delete" :> Post '[HTML] Page.Html
 
 newtype AdminPassword = AdminPassword T.Text
 
@@ -171,8 +171,8 @@ postRegisterHandler conn limits body = do
                     liftIO $ Db.saveRegistration conn registration
                     redirectTo "/success"
 
-deleteRegistrationsHandler :: Db.Connection -> ParticipantId -> Handler Page.Html
-deleteRegistrationsHandler conn (ParticipantId participantId) = do
+deleteRegistrationsHandler :: Db.Connection -> () -> ParticipantId -> Handler Page.Html
+deleteRegistrationsHandler conn _ (ParticipantId participantId) = do
     liftIO $ Db.deleteRegistration conn (Db.DbId participantId)
     redirectTo "/admin"
 
