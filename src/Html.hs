@@ -307,7 +307,7 @@ registrationPrintPage participants = layout $ do
                         H.th "Unterschrift"
                 H.tbody $ do
                     mapM_ participantRow (zip [(1 :: Int)..] participants)
-                    mapM_ emptyRow [(length participants + 1)..(length participants + 100)]
+                    mapM_ emptyRow [(length participants + 1)..(length participants + 150)]
 
   where
     emptyRow n =
