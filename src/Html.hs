@@ -298,8 +298,22 @@ registrationPrintPage participants = layout $ do
                         H.th "So"
                         H.th "Kosten"
                         H.th "Unterschrift"
-                H.tbody $ mapM_ participantRow (zip [(1 :: Int)..] participants)
+                H.tbody $ do
+                    mapM_ participantRow (zip [(1 :: Int)..] participants)
+                    mapM_ emptyRow [(length participants + 1)..(length participants + 100)]
+
   where
+    emptyRow n =
+        H.tr $ do
+            H.td ! A.class_ "text-right" $ H.toHtml $ show n
+            H.td mempty
+            H.td mempty
+            H.td mempty
+            H.td mempty
+            H.td mempty
+            H.td mempty
+            H.td mempty
+            H.td mempty
     participantRow (n, p@Db.DbParticipant{..}) =
         H.tr $ do
             H.td ! A.class_ "text-right" $ H.toHtml $ show n
