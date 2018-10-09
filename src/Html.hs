@@ -19,7 +19,7 @@ import Data.Monoid ((<>))
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import Data.Time.LocalTime (utcToZonedTime, hoursToTimeZone, ZonedTime)
-import Data.Time.Calendar (fromGregorian, Day)
+import Data.Maybe (catMaybes)
 
 import qualified Db as Db
 import Types
@@ -108,6 +108,12 @@ registrationListPage participants (GymSleepingLimit gymSleepingLimit, CampingSle
             H.a ! A.href "/registrations.csv" $ "Download als .csv"
         col 3 $ do
             H.a ! A.href "/registrations/print" $ "Print stuff"
+    H.br
+    row $ do
+        col 12 $ do
+            H.h3 "E-Mail-Adressen der Minderjährigen"
+            H.p $ do
+                H.toHtml $ T.intercalate ", " $ catMaybes $ fmap Db.dbParticipantEmail $ filter (requiresParentSignature . Db.dbParticipantBirthday) participants
   where
     participantRow p@Db.DbParticipant{..} =
         H.tr $ do
@@ -332,12 +338,6 @@ registrationPrintPage participants = layout $ do
     sleepOverShort NoNights = ""
     sleepOverShort GymSleeping = "K"
     sleepOverShort CouldntSelect = ""
-
-requiresParentSignature :: Day -> Bool
-requiresParentSignature birthday =
-    -- this is the second day because people having their 18th birthday on the first day are fine.
-    birthday >= fromGregorian 2000 10 13
-
 
 
 row :: Html -> Html
