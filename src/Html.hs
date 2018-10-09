@@ -300,9 +300,9 @@ registrationPrintPage participants = layout $ do
                         H.th "Geburtsdatum"
                         H.th "Adresse"
                         H.th "Wo?"
-                        H.th "Fr"
-                        H.th "Sa"
-                        H.th "So"
+                        H.th ! A.style "width: 30px" $ "Fr"
+                        H.th ! A.style "width: 30px" $ "Sa"
+                        H.th ! A.style "width: 30px" $ "So"
                         H.th "Kosten"
                         H.th "Unterschrift"
                 H.tbody $ do
