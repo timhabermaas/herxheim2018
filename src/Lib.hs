@@ -180,7 +180,7 @@ deleteRegistrationsHandler conn _ (ParticipantId participantId) = do
 
 printRegistrationsHandler :: Db.Connection -> () -> Handler Page.Html
 printRegistrationsHandler conn _ = do
-    regs <- liftIO $ Db.allRegistrations conn
+    regs <- liftIO $ Db.allRegistrationsOrderedByName conn
     pure $ Page.registrationPrintPage regs
 
 

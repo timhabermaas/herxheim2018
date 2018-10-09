@@ -8,6 +8,7 @@ module Db
     , saveRegistration
     , deleteRegistration
     , allRegistrations
+    , allRegistrationsOrderedByName
     , DbParticipant(..)
     , DbId(..)
     , Connection
@@ -87,6 +88,11 @@ deleteRegistration (Connection conn) (DbId id') = do
 allRegistrations :: Connection -> IO [DbParticipant]
 allRegistrations (Connection conn) = do
     PSQL.query_ conn "SELECT id, name, birthday, street, postalCode, city, country, registeredAt, sleepovers, comment, email FROM participants ORDER BY registeredAt DESC"
+
+allRegistrationsOrderedByName :: Connection -> IO [DbParticipant]
+allRegistrationsOrderedByName (Connection conn) = do
+    PSQL.query_ conn "SELECT id, name, birthday, street, postalCode, city, country, registeredAt, sleepovers, comment, email FROM participants ORDER BY name"
+
 
 connect :: String -> IO Connection
 connect url = Connection <$> PSQL.connectPostgreSQL (BS.pack url)
