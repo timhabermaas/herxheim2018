@@ -287,7 +287,7 @@ registrationPrintPage participants = layout $ do
     row $ do
         col 12 $ do
             H.div ! A.class_ "fixed-header" $ do
-                H.h1 ! A.class_ "text-center" $ "Schüler"
+                H.h1 ! A.class_ "text-center" $ "Schülerliste"
     row $ do
         col 12 $ do
             H.table ! A.class_ "table table-bordered table-sm" $ do
