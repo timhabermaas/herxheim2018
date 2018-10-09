@@ -19,6 +19,7 @@ import Data.Monoid ((<>))
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import Data.Time.LocalTime (utcToZonedTime, hoursToTimeZone, ZonedTime)
+import Data.Time.Calendar (fromGregorian, Day)
 
 import qualified Db as Db
 import Types
@@ -319,7 +320,7 @@ registrationPrintPage participants = layout $ do
         H.tr $ do
             H.td ! A.class_ "text-right" $ H.toHtml $ show n
             H.td $ H.toHtml dbParticipantName
-            H.td ! A.style "width: 100px" $ H.toHtml $ formatDay dbParticipantBirthday
+            H.td !? (requiresParentSignature dbParticipantBirthday, A.class_ "font-weight-bold") ! A.style "width: 100px" $ H.toHtml $ formatDay dbParticipantBirthday
             H.td ! A.style "width: 300px" $ H.toHtml $ formatAddress p
             H.td ! A.class_ "text-center" ! A.style "width: 40px" $ sleepOverShort dbParticipantSleepovers
             H.td mempty
@@ -331,6 +332,12 @@ registrationPrintPage participants = layout $ do
     sleepOverShort NoNights = ""
     sleepOverShort GymSleeping = "K"
     sleepOverShort CouldntSelect = ""
+
+requiresParentSignature :: Day -> Bool
+requiresParentSignature birthday =
+    -- this is the second day because people having their 18th birthday on the first day are fine.
+    birthday >= fromGregorian 2000 10 13
+
 
 
 row :: Html -> Html
