@@ -51,6 +51,7 @@ type API
  :<|> "admin" :> BasicAuth "foo-realm" () :> Get '[HTML] Page.Html
  :<|> "registrations.csv" :> BasicAuth "foo-realm" () :> Get '[CSV] BSL.ByteString
  :<|> "registrations" :> BasicAuth "foo-realm" () :> Capture "participantId" ParticipantId :> "delete" :> Post '[HTML] Page.Html
+ :<|> "registrations" :> BasicAuth "foo-realm" () :> "print" :> Get '[HTML] Page.Html
 
 newtype AdminPassword = AdminPassword T.Text
 
@@ -94,6 +95,7 @@ server conn limits =
     :<|> registrationsHandler conn limits
     :<|> registrationsCsvHandler conn
     :<|> deleteRegistrationsHandler conn
+    :<|> printRegistrationsHandler conn
 
 isOverLimit :: Db.Connection -> (GymSleepingLimit, CampingSleepingLimit) -> IO (GymSleepingLimitReached, CampingSleepingLimitReached)
 isOverLimit conn (GymSleepingLimit gymLimit, CampingSleepingLimit campingLimit) = do
@@ -175,6 +177,11 @@ deleteRegistrationsHandler :: Db.Connection -> () -> ParticipantId -> Handler Pa
 deleteRegistrationsHandler conn _ (ParticipantId participantId) = do
     liftIO $ Db.deleteRegistration conn (Db.DbId participantId)
     redirectTo "/admin"
+
+printRegistrationsHandler :: Db.Connection -> () -> Handler Page.Html
+printRegistrationsHandler conn _ = do
+    regs <- liftIO $ Db.allRegistrations conn
+    pure $ Page.registrationPrintPage regs
 
 
 successHandler :: Handler Page.Html

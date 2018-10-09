@@ -5,6 +5,7 @@ module Html
     ( registerPage
     , successPage
     , registrationListPage
+    , registrationPrintPage
     , Html
     ) where
 
@@ -102,14 +103,16 @@ registrationListPage participants (GymSleepingLimit gymSleepingLimit, CampingSle
                         H.th ""
                         H.th ""
     row $ do
-        col 12 $ do
+        col 3 $ do
             H.a ! A.href "/registrations.csv" $ "Download als .csv"
+        col 3 $ do
+            H.a ! A.href "/registrations/print" $ "Print stuff"
   where
     participantRow p@Db.DbParticipant{..} =
         H.tr $ do
             H.td $ H.toHtml dbParticipantName
-            H.td $ H.toHtml $ birthday dbParticipantBirthday
-            H.td $ H.toHtml $ address p
+            H.td $ H.toHtml $ formatDay dbParticipantBirthday
+            H.td $ H.toHtml $ formatAddress p
             H.td ! A.class_ "text-center" $ gym dbParticipantSleepovers
             H.td ! A.class_ "text-center" $ tent dbParticipantSleepovers
             H.td $ H.toHtml $ formatTime defaultTimeLocale "%d.%m.%Y %H:%M Uhr" $ utcToBerlin dbParticipantRegisteredAt
@@ -119,12 +122,13 @@ registrationListPage participants (GymSleepingLimit gymSleepingLimit, CampingSle
                 H.form ! A.action (H.toValue $ "/registrations/" <> idToText dbParticipantId <> "/delete")  ! A.method "post" $ do
                     H.input ! A.onclick (H.toValue $ "return confirm('Willst du wirklich ' + '" <> dbParticipantName <> "' + ' ausladen?');") ! A.class_ "btn btn-danger" ! A.type_ "submit" ! A.name "delete" ! A.value "Löschen"
     idToText (Db.DbId i) = show i
-    birthday d = formatTime defaultTimeLocale "%d.%m.%Y" d
-    address Db.DbParticipant{..} = (dbParticipantStreet <> ", " <> dbParticipantPostalCode <> " " <> dbParticipantCity <> "(" <> dbParticipantCountry <> ")") :: T.Text
     gym GymSleeping = "X"
     gym _ = ""
     tent Camping = "X"
     tent _ = ""
+
+formatAddress :: Db.DbParticipant -> T.Text
+formatAddress Db.DbParticipant{..} = dbParticipantStreet <> ", " <> dbParticipantPostalCode <> " " <> dbParticipantCity <> " (" <> dbParticipantCountry <> ")"
 
 utcToBerlin :: UTCTime -> ZonedTime
 utcToBerlin = utcToZonedTime (hoursToTimeZone 2)
@@ -270,6 +274,44 @@ bootstrapRadios ref view =
                 H.label ! A.class_ "form-check-label" ! A.for cssId $ c
     in
         mapM_ radio options
+
+registrationPrintPage :: [Db.DbParticipant] -> H.Html
+registrationPrintPage participants = layout $ do
+    row $ do
+        col 12 $ do
+            H.div ! A.class_ "fixed-header" $ do
+                H.h1 ! A.class_ "text-center" $ "Schüler im Klassenzimmer"
+                --H.p "Mit meiner Unterschrift nehme ich zur Kenntnis, dass die Veranstalter des 15. Pfälzer Jongliertreffens (12. - 14.10.2018) keine Haftung für Diebstahl, Sach- oder Personenschäden übernehmen können."
+    row $ do
+        col 12 $ do
+            H.table ! A.class_ "table table-bordered table-sm" $ do
+                H.thead $ do
+                    H.tr $ do
+                        H.th ! A.colspan "9" $ "Mit meiner Unterschrift nehme ich zur Kenntnis, dass die Veranstalter des 15. Pfälzer Jongliertreffens (12. - 14.10.2018) keine Haftung für Diebstahl, Sach- oder Personenschäden übernehmen können."
+                    H.tr $ do
+                        H.th ""
+                        H.th "Name"
+                        H.th "Geburtsdatum"
+                        H.th "Adresse"
+                        H.th "Fr"
+                        H.th "Sa"
+                        H.th "So"
+                        H.th "Kosten"
+                        H.th "Unterschrift"
+                H.tbody $ mapM_ participantRow (zip [(1 :: Int)..] participants)
+  where
+    participantRow (n, p@Db.DbParticipant{..}) =
+        H.tr $ do
+            H.td ! A.class_ "text-right" $ H.toHtml $ show n
+            H.td $ H.toHtml dbParticipantName
+            H.td ! A.style "width: 100px" $ H.toHtml $ formatDay dbParticipantBirthday
+            H.td ! A.style "width: 300px" $ H.toHtml $ formatAddress p
+            H.td mempty
+            H.td mempty
+            H.td mempty
+            H.td $ mempty
+            H.td $ mempty
+
 
 row :: Html -> Html
 row inner = H.div ! A.class_ "row" $ inner
