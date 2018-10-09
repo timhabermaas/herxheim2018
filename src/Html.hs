@@ -280,19 +280,19 @@ registrationPrintPage participants = layout $ do
     row $ do
         col 12 $ do
             H.div ! A.class_ "fixed-header" $ do
-                H.h1 ! A.class_ "text-center" $ "Schüler im Klassenzimmer"
-                --H.p "Mit meiner Unterschrift nehme ich zur Kenntnis, dass die Veranstalter des 15. Pfälzer Jongliertreffens (12. - 14.10.2018) keine Haftung für Diebstahl, Sach- oder Personenschäden übernehmen können."
+                H.h1 ! A.class_ "text-center" $ "Schüler"
     row $ do
         col 12 $ do
             H.table ! A.class_ "table table-bordered table-sm" $ do
                 H.thead $ do
                     H.tr $ do
-                        H.th ! A.colspan "9" $ "Mit meiner Unterschrift nehme ich zur Kenntnis, dass die Veranstalter des 15. Pfälzer Jongliertreffens (12. - 14.10.2018) keine Haftung für Diebstahl, Sach- oder Personenschäden übernehmen können."
+                        H.th ! A.colspan "10" $ "Mit meiner Unterschrift nehme ich zur Kenntnis, dass die Veranstalter des 15. Pfälzer Jongliertreffens (12. - 14.10.2018) keine Haftung für Diebstahl, Sach- oder Personenschäden übernehmen können."
                     H.tr $ do
                         H.th ""
                         H.th "Name"
                         H.th "Geburtsdatum"
                         H.th "Adresse"
+                        H.th "Wo?"
                         H.th "Fr"
                         H.th "Sa"
                         H.th "So"
@@ -314,17 +314,23 @@ registrationPrintPage participants = layout $ do
             H.td mempty
             H.td mempty
             H.td mempty
+            H.td mempty
     participantRow (n, p@Db.DbParticipant{..}) =
         H.tr $ do
             H.td ! A.class_ "text-right" $ H.toHtml $ show n
             H.td $ H.toHtml dbParticipantName
             H.td ! A.style "width: 100px" $ H.toHtml $ formatDay dbParticipantBirthday
             H.td ! A.style "width: 300px" $ H.toHtml $ formatAddress p
+            H.td ! A.class_ "text-center" ! A.style "width: 40px" $ sleepOverShort dbParticipantSleepovers
             H.td mempty
             H.td mempty
             H.td mempty
             H.td $ mempty
             H.td $ mempty
+    sleepOverShort Camping = "Z"
+    sleepOverShort NoNights = ""
+    sleepOverShort GymSleeping = "K"
+    sleepOverShort CouldntSelect = ""
 
 
 row :: Html -> Html
