@@ -18,7 +18,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: lts-11.13
+resolver: lts-13.9
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -40,10 +40,8 @@ packages:
 # (e.g., acme-missiles-0.3)
 # extra-deps: []
 extra-deps:
-  - beam-postgres-0.3.2.0
-  - digestive-functors-0.8.3.0
+  - digestive-functors-0.8.4.0
   - digestive-functors-blaze-0.6.2.0
-  - haddock-library-1.4.5
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
